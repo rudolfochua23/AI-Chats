@@ -2,7 +2,7 @@
 
 - Conversation ID: 69a30943-3324-8324-9dd5-cb2b5da9dd46
 - Title: Jerlan Projects - Mega Prompt Optimization Tips
-- Captured: 2026-03-01T08:40:11.377Z
+- Captured: 2026-03-01T08:43:14.294Z
 - URL: https://chatgpt.com/g/g-p-698ace27fcb08191853e12827657b08e-jerlan-projects/c/69a30943-3324-8324-9dd5-cb2b5da9dd46
 
 ---
@@ -3623,4 +3623,8 @@ Continue should show your model
 Cline should connect with base URL /v1
 
 If you tell me what you see inside Cline settings (the exact provider options list), I can map the exact clicks because Cline UI labels vary by version.
+
+## Assistant
+
+Given everything you’ve said (spec-driven, not super code savvy, want OSS/free as much as possible, but still want “it just works”), the best choice is
 
