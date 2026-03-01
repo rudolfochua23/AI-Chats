@@ -2,7 +2,7 @@
 
 - Conversation ID: 69a30943-3324-8324-9dd5-cb2b5da9dd46
 - Title: Jerlan Projects - Mega Prompt Optimization Tips
-- Captured: 2026-03-01T07:14:59.055Z
+- Captured: 2026-03-01T07:18:01.854Z
 - URL: https://chatgpt.com/g/g-p-698ace27fcb08191853e12827657b08e-jerlan-projects/c/69a30943-3324-8324-9dd5-cb2b5da9dd46
 
 ---
@@ -3399,4 +3399,8 @@ Move config to ~/.continue/config.yaml (WSL)
 Reload VS Code window
 
 If you want, tell me which extension is giving you trouble (Continue or Cline first), and I’ll give you the exact click-by-click path + the exact folder where its config should live.
+
+## User
+
+there is no Install in WSL options available, check the screenshot
 
