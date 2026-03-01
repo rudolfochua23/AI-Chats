@@ -2,7 +2,7 @@
 
 - Conversation ID: 69a3c105-6130-839f-bde4-4186ad5e59c0
 - Title: App Development - AI Spec-Driven App Review
-- Captured: 2026-03-01T11:56:15.746Z
+- Captured: 2026-03-01T11:59:17.701Z
 - URL: https://chatgpt.com/g/g-p-69a3c28d968c8191ac141b91a84da50a-app-development/c/69a3c105-6130-839f-bde4-4186ad5e59c0
 
 ---
@@ -3419,4 +3419,71 @@ Show a concrete example (like a SaaS task manager)
 Or simulate what Copilot would output for a sample PRODUCT.md
 
 Which one would help you most right now?
+
+## Assistant
+
+Excellent question.
+
+You’re now thinking at the correct systems level.
+
+Let’s separate two things clearly:
+
+CI memory
+
+AI memory (Copilot / ChatGPT)
+
+project.memory.md
+
+PRODUCT.md
+
+inputs.yml
+
+They are NOT the same thing.
+
+🔵 1️⃣ Does CI Need “Memory”?
+
+No.
+
+CI does NOT have memory.
+
+CI simply:
+
+Checks out your repository
+
+Runs commands
+
+Fails or passes
+
+For example:
+
+Bash
+pnpm install
+pnpm lint
+pnpm typecheck
+pnpm test
+pnpm build
+pnpm tools:validate-inputs
+
+CI does not “remember” previous state.
+It only validates the current repo state.
+
+So CI does not care about PRODUCT.md unless:
+
+You have tests that depend on it
+
+You validate inputs.yml against schema
+
+Or your tools check consistency
+
+🔵 2️⃣ Does Copilot Update project.memory.md Automatically?
+
+No.
+
+Copilot does NOT maintain persistent memory.
+
+Copilot:
+
+Reads current file context
+
+Generates code
 
