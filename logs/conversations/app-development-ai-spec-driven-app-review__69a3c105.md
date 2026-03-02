@@ -2,7 +2,7 @@
 
 - Conversation ID: 69a3c105-6130-839f-bde4-4186ad5e59c0
 - Title: App Development - AI Spec-Driven App Review
-- Captured: 2026-03-02T13:24:55.721Z
+- Captured: 2026-03-02T13:27:58.591Z
 - URL: https://chatgpt.com/g/g-p-69a3c28d968c8191ac141b91a84da50a/c/69a3c105-6130-839f-bde4-4186ad5e59c0
 
 ---
@@ -5795,4 +5795,265 @@ A governance model for team collaboration
 Or a production-grade release strategy
 
 Where do you want to go next?
+
+## User
+
+- in .devcontainer/devcontainer.json file, i think you forgot this line:
+
+"customizations": {
+    "vscode": {
+      "settings": {
+        "files.watcherExclude": {
+          "**/node_modules/**":true,
+          "**/.turbo/**":true,
+          "**/.next/**":true,
+          "**/dist/**":true
+        }
+      }
+    }
+
+## Assistant
+
+You’re right — I dropped that block in the V3.3 “placeholder” version. Add it back exactly (and keep the {{APP_NAME}} placeholder).
+
+Here is the correct .devcontainer/devcontainer.json (V1 + placeholder + customizations):
+
+JSON
+{
+  "name": "Spec-Driven Platform - {{APP_NAME}}",
+
+  "build": { "dockerfile": "Dockerfile" },
+
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+
+  "remoteUser": "node",
+  "updateRemoteUserUID": true,
+
+  "mounts": [
+    "source=pnpm-store,target=/home/node/.pnpm-store,type=volume"
+  ],
+
+  "runArgs": ["--ulimit", "nofile=65536:65536"],
+
+  "postCreateCommand": "corepack enable && pnpm -v",
+
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "files.watcherExclude": {
+          "**/node_modules/**": true,
+          "**/.turbo/**": true,
+          "**/.next/**": true,
+          "**/dist/**": true
+        },
+        "search.exclude": {
+          "**/node_modules/**": true,
+          "**/.turbo/**": true,
+          "**/.next/**": true,
+          "**/dist/**": true
+        }
+      }
+    }
+  }
+}
+
+Strict rule reminder (still applies):
+
+Copilot replaces {{APP_NAME}} with inputs.yml.app.name only during initial scaffold.
+
+After that, feature updates must not modify devcontainer files.
+
+If you want, I can also re-issue the full V3.3 master prompt with this corrected devcontainer.json embedded so your notes remain perfectly self-contained.
+
+## User
+
+ok please do that and also double check if something is missing again
+
+## Assistant
+
+Below is the fully rewritten, self-contained, double-checked MASTER PROMPT — V3.4 (CANONICAL) with the correct devcontainer.json including customizations + search.exclude and all prior rules (logs + implementation map + CI guard + compose-first + k8s scaffold + multi-tenant toggle + dynamic devcontainer name set once).
+
+Copy/paste this whole thing into your notes as your single source of truth.
+
+🔷 SPEC-DRIVEN PLATFORM MASTER PROMPT — V3.4 (CANONICAL)
+
+This system builds:
+
+A reusable internal platform template
+
+A full working app scaffold from product requirements
+
+CI with strict enforcement
+
+DevOps + SRE baseline (security, observability, reliability)
+
+Docker Compose-first deployment (dev/stage/prod)
+
+Kubernetes scaffold (inactive until enabled)
+
+Multi-tenant toggle now or later
+
+Strict AI change logging + implementation snapshot mapping
+
+No silent regeneration.
+No hidden memory.
+No platform drift.
+
+✅ GLOBAL NON-NEGOTIABLE RULES
+Rule 1 — Feature Source of Truth (Human Only)
+
+All business features, behavior, and workflows are written only in:
+
+docs/PRODUCT.md
+
+No feature narrative goes into:
+
+project.memory.md
+
+inputs.yml
+
+change logs
+
+code comments
+
+Rule 2 — Technical Contract Source of Truth (AI Only)
+
+AI generates and maintains:
+
+inputs.yml
+
+inputs.schema.json
+
+Derived strictly from PRODUCT.md + your answers.
+
+Rule 3 — Platform Invariants
+
+Platform rules live only in:
+
+project.memory.md
+
+This file is small and stable.
+It is not a changelog.
+
+Rule 4 — Mandatory AI Change Logging (STRICT)
+
+Every AI change must update BOTH:
+
+docs/CHANGELOG_AI.md (history of changes)
+
+docs/IMPLEMENTATION_MAP.md (current snapshot)
+
+No exceptions.
+
+Rule 5 — Mandatory Pre-Change Review (STRICT)
+
+Before making any new change, AI MUST read:
+
+docs/PRODUCT.md
+
+inputs.yml
+
+docs/CHANGELOG_AI.md
+
+docs/IMPLEMENTATION_MAP.md
+
+project.memory.md
+
+Then it must:
+
+summarize current state (from Implementation Map)
+
+summarize recent changes (from Change Log)
+
+modify only impacted modules
+
+preserve platform baselines
+
+update both docs again
+
+Rule 6 — Compose is Default for Dev/Stage/Prod
+
+Docker Compose remains the default deployment approach for:
+
+development
+
+staging
+
+production
+
+Rule 7 — Kubernetes is Scaffold Only
+
+Kubernetes deployment becomes active only if:
+
+YAML
+deploy:
+  k8s:
+    enabled: true
+
+K8s scaffold exists even when disabled.
+
+Compose always remains fallback.
+
+Rule 8 — Multi-Tenant Toggle Now or Later
+
+Tenancy is spec-controlled:
+
+YAML
+tenancy:
+  mode: single | multi
+
+Upgrading later is supported by spec-driven updates.
+
+Rule 9 — Dynamic Devcontainer Name (STRICT)
+
+Bootstrap devcontainer.json includes placeholder:
+
+JSON
+"name": "Spec-Driven Platform - {{APP_NAME}}"
+
+During initial generation ONLY:
+
+Replace {{APP_NAME}} with inputs.yml.app.name
+
+After initial scaffold:
+
+.devcontainer/* must NOT be modified by feature updates
+
+Only platform upgrades can touch devcontainer config
+
+✅ EXECUTION RULES (NO CONFUSION)
+Manual editing is ONLY for:
+
+docs/PRODUCT.md (features/workflows)
+
+the bootstrap files listed in PHASE 0
+
+the initial docs files in PHASE 1 (just template text)
+
+Copilot Chat is used for:
+
+generating code/files
+
+updating inputs.yml + schema
+
+implementing features
+
+changing layouts/modules
+
+updating docs/CHANGELOG_AI.md + docs/IMPLEMENTATION_MAP.md
+
+creating migrations
+
+generating infra and CI updates
+
+Terminal commands are used ONLY for:
+
+pnpm install/lint/typecheck/test/build
+
+tools scripts
+
+host-run docker compose ...
+
+🟦 PHASE 0 — BOOTSTRAP REPO (ONE TIME ONLY)
+STEP 0.1 — C
 
