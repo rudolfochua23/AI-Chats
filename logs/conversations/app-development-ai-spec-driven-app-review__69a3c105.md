@@ -2,7 +2,7 @@
 
 - Conversation ID: 69a3c105-6130-839f-bde4-4186ad5e59c0
 - Title: App Development - AI Spec-Driven App Review
-- Captured: 2026-03-02T13:43:13.677Z
+- Captured: 2026-03-02T13:46:17.253Z
 - URL: https://chatgpt.com/g/g-p-69a3c28d968c8191ac141b91a84da50a/c/69a3c105-6130-839f-bde4-4186ad5e59c0
 
 ---
@@ -7707,5 +7707,569 @@ all code in apps/*, packages/*
 
 infra in deploy/*
 
-tools sc
+tools scripts in tools/*
+
+CI in .github/workflows/*
+
+docs snapshot and logs:
+
+docs/CHANGELOG_AI.md
+
+docs/IMPLEMENTATION_MAP.md
+
+Terminal is only for:
+
+pnpm ... commands (inside devcontainer)
+
+docker compose ... commands (host machine)
+
+🔒 GLOBAL RULES (STRICT)
+
+Feature Truth: Only docs/PRODUCT.md describes features/workflows.
+
+Spec Truth: Only inputs.yml defines technical generation.
+
+Schema Truth: Only inputs.schema.json validates inputs.yml.
+
+No Silent Changes: Every AI change must update:
+
+docs/CHANGELOG_AI.md
+
+docs/IMPLEMENTATION_MAP.md
+
+Review First: Before any AI change, AI must read:
+
+docs/PRODUCT.md, inputs.yml, inputs.schema.json, docs/CHANGELOG_AI.md, docs/IMPLEMENTATION_MAP.md, project.memory.md
+
+Compose Default: Compose is default for dev/stage/prod.
+
+K8s Disabled: K8s scaffold exists but stays disabled until enabled in inputs.yml.
+
+Devcontainer Naming: .devcontainer/devcontainer.json contains {{APP_NAME}} placeholder; AI replaces it ONCE (initial scaffold only) with inputs.yml.app.name. Never touch devcontainer again during feature updates.
+
+🟦 PHASE 0 — MANUAL BOOTSTRAP (FILES & FOLDERS YOU CREATE)
+STEP 0.1 — Create repo
+
+Create GitHub repo → clone locally → open in VS Code.
+
+STEP 0.2 — Create these folders manually
+Code
+.devcontainer/
+docs/
+tools/
+STEP 0.3 — Create these files manually (exact contents below)
+.gitignore
+gitignore
+node_modules
+dist
+.next
+.turbo
+.env
+.env.*
+coverage
+*.log
+.DS_Store
+*.tsbuildinfo
+.nvmrc
+Plain text
+20
+package.json (bootstrap only; AI will expand later)
+JSON
+{
+  "name": "spec-driven-platform",
+  "private": true,
+  "packageManager": "pnpm@9.12.0",
+  "engines": { "node": ">=20" }
+}
+.devcontainer/devcontainer.json (V1 + placeholder + customizations)
+JSON
+{
+  "name": "Spec-Driven Platform - {{APP_NAME}}",
+
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+
+  "remoteUser": "node",
+  "updateRemoteUserUID": true,
+
+  "mounts": [
+    "source=pnpm-store,target=/home/node/.pnpm-store,type=volume"
+  ],
+
+  "runArgs": ["--ulimit", "nofile=65536:65536"],
+
+  "postCreateCommand": "corepack enable && pnpm -v",
+
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "files.watcherExclude": {
+          "**/node_modules/**": true,
+          "**/.turbo/**": true,
+          "**/.next/**": true,
+          "**/dist/**": true
+        },
+        "search.exclude": {
+          "**/node_modules/**": true,
+          "**/.turbo/**": true,
+          "**/.next/**": true,
+          "**/dist/**": true
+        }
+      }
+    }
+  }
+}
+.devcontainer/Dockerfile (V1 exact)
+dockerfile
+FROM mcr.microsoft.com/devcontainers/typescript-node:20
+
+ENV PNPM_HOME="/usr/local/share/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+
+# Enable pnpm
+RUN corepack enable && corepack prepare pnpm@9.12.0 --activate
+
+# Persist pnpm store for faster installs
+ENV PNPM_STORE_PATH=/home/node/.pnpm-store
+RUN pnpm config set store-dir ${PNPM_STORE_PATH}
+
+# Basic tools only (no compose plugin inside container)
+RUN apt-get update && \
+    apt-get install -y git curl ca-certificates netcat-traditional && \
+    rm -rf /var/lib/apt/lists/*
+project.memory.md (platform invariants only)
+Markdown
+# Project Memory (V3.6 STRICTEST)
+
+- docs/PRODUCT.md is the only feature/workflow description file.
+- inputs.yml + inputs.schema.json define the spec contract; AI maintains them.
+- Compose-first deployment for dev/stage/prod.
+- K8s scaffold exists but is disabled unless enabled in inputs.yml.
+- Strict security baseline + observability baseline.
+- Every AI change must update docs/CHANGELOG_AI.md and docs/IMPLEMENTATION_MAP.md.
+- Before any change, AI must review PRODUCT.md, inputs.yml, inputs.schema.json, CHANGELOG_AI.md, IMPLEMENTATION_MAP.md.
+- Devcontainer name placeholder replaced once during initial scaffold only; do not touch devcontainer in feature updates.
+docs/PRODUCT.md (YOU fill features here)
+Markdown
+# Product Definition
+
+## App Name
+## Purpose
+## Target Users
+## Core Entities
+## User Roles
+## Main Workflows (step-by-step user flows)
+## Realtime Features (if any)
+## Background Jobs (if any)
+## Storage Requirements (types, size limits)
+## Data Sensitivity (PII? retention? export/delete?)
+## Tenancy Model (single / multi / undecided)
+## Environments Needed (dev / stage / prod)
+## Domain / Base URL Expectations (optional)
+docs/CHANGELOG_AI.md (bootstrap file)
+Markdown
+# AI Change Log
+
+Every AI-generated change MUST be recorded here.
+
+Format:
+
+## YYYY-MM-DD
+- Why change was made (reference PRODUCT.md update)
+- What modules/files changed
+- What tables/migrations changed
+- What routes/pages changed
+- What jobs/infra changed
+- Any migration or rollout notes
+docs/IMPLEMENTATION_MAP.md (bootstrap file)
+Markdown
+# Implementation Map (Current Snapshot)
+
+Must include:
+- Entities/tables + migration summary
+- API modules + routes/endpoints
+- Web pages/screens + major layouts
+- Jobs/queues/workers + DLQ/replay
+- Storage buckets/policies
+- Auth/RBAC mapping + tenancy handling
+- Observability endpoints/exporters
+- Deployment entrypoints (compose paths, k8s scaffold status)
+
+✅ Manual work ends here.
+
+🟦 PHASE 1 — OPEN DEVCONTAINER
+What you do (VS Code)
+
+Ctrl+Shift+P → “Dev Containers: Reopen in Container”
+
+✅ After the container opens, you will use Copilot and devcontainer terminal.
+
+🟦 PHASE 2 — COPILOT SPEC DISCOVERY (QUESTIONS ONLY)
+What you do (Copilot Chat)
+
+Paste:
+
+Plain text
+We are building an app using Spec-Driven Platform V3.6 (STRICTEST).
+
+STRICT PROCESS:
+1) Read:
+   - docs/PRODUCT.md
+   - project.memory.md
+   - docs/CHANGELOG_AI.md
+   - docs/IMPLEMENTATION_MAP.md
+
+2) Ask structured questions to finalize technical spec:
+   - confirm app name (for devcontainer name replacement)
+   - domain/base URLs for dev/stage/prod
+   - tenancy mode now + upgrade plan
+   - Keycloak issuer/client IDs/role claim mapping
+   - RBAC roles/permissions model
+   - PII governance + retention/export/delete
+   - storage buckets + allowed mime + size limits
+   - background jobs + DLQ/replay needs
+   - observability exporters (OTLP/Jaeger) + metrics
+   - security constraints (CORS, CSRF mode, rate limits)
+   - confirm Compose stays default for dev/stage/prod
+   - confirm K8s scaffold stays disabled by default
+
+Do NOT generate files yet. Only ask questions.
+
+Answer questions.
+
+🟦 PHASE 3 — COPILOT GENERATES SPEC FILES (inputs.yml + schema)
+What you do (Copilot Chat)
+
+Paste:
+
+Plain text
+Generate:
+1) inputs.yml (version: 3)
+2) inputs.schema.json (strict JSON schema with conditionals)
+
+Rules:
+- Derived from docs/PRODUCT.md and my answers.
+- Compose default for dev/stage/prod.
+- K8s scaffold exists but deploy.k8s.enabled defaults to false.
+- Tenancy supports later upgrade from single -> multi.
+- Include sections: app, environments, tenancy, auth, security, observability, storage, jobs, database, api, ci, deploy.
+
+ALSO:
+- Replace {{APP_NAME}} in .devcontainer/devcontainer.json with inputs.yml.app.name
+  (allowed ONLY now during initial scaffold; never touch devcontainer again later).
+
+Output ONLY YAML and JSON.
+
+✅ You then copy those 2 outputs into repo root:
+
+inputs.yml
+
+inputs.schema.json
+
+🟦 PHASE 4 — COPILOT GENERATES FULL PLATFORM + FULL APP + CI + TOOLS
+What you do (Copilot Chat)
+
+Paste:
+
+Plain text
+Generate the full monorepo scaffold using:
+- inputs.yml
+- inputs.schema.json
+- docs/PRODUCT.md
+- project.memory.md
+
+STRICT PROCESS:
+1) Read docs/CHANGELOG_AI.md and docs/IMPLEMENTATION_MAP.md first.
+2) Generate code and infra.
+3) Update docs/CHANGELOG_AI.md with what was generated.
+4) Update docs/IMPLEMENTATION_MAP.md with a full current snapshot.
+5) Do NOT modify .devcontainer after this point.
+
+REQUIREMENTS:
+
+Monorepo:
+- pnpm + turbo
+- eslint + prettier + strict TS
+- root scripts: lint, typecheck, test, build
+- tools:
+  - tools/validate-inputs.mjs (validate inputs.yml vs schema)
+  - tools/check-env.mjs (fail-fast env validation)
+  - tools/hydration-lint.mjs
+  - tools/check-product-sync.mjs (STRICTEST CI guard)
+
+apps/web:
+- Next.js App Router
+- Tailwind + shadcn/ui shell
+- OIDC login scaffold (Keycloak)
+- role-based UI gating scaffold
+- hydration-safe boundaries enforced
+- error boundary + notFound handling
+- minimal routes/pages derived from PRODUCT workflows
+
+apps/api:
+- NestJS
+- ValidationPipe strict (whitelist + forbidNonWhitelisted + transform)
+- @nestjs/config with schema/env validation
+- Global exception filter {code,message,requestId,details}
+- API versioning under /api/v1
+- Swagger /docs disabled in prod
+- /health/liveness and /health/readiness
+- /metrics Prometheus endpoint if enabled
+- Logging: nestjs-pino with requestId + userId when available
+- OpenTelemetry scaffold (http + prisma + bullmq correlation)
+- Auth: Keycloak JWT validation + RBAC guards
+- Tenancy scaffold: tenant context extraction from JWT claim (even if single mode)
+- Prisma + migrations include:
+  - user, role
+  - outbox_event
+  - audit_log
+  - idempotency support
+- BullMQ:
+  - queue + worker
+  - retries/backoff
+  - DLQ if enabled
+  - replay endpoint admin-only if enabled
+
+Infrastructure:
+- Compose default for dev/stage/prod:
+  - deploy/compose/dev/docker-compose.yml
+  - deploy/compose/stage/docker-compose.yml
+  - deploy/compose/prod/docker-compose.yml
+- Services include postgres/redis/keycloak/minio with healthchecks
+- Optional observability profile services placeholders
+
+Kubernetes:
+- Always generate deploy/k8s-scaffold (inactive until enabled).
+
+CI:
+- .github/workflows/ci.yml runs:
+  - pnpm install
+  - pnpm tools:validate-inputs
+  - pnpm tools:check-product-sync  (STRICTEST)
+  - pnpm lint
+  - pnpm typecheck
+  - pnpm test
+  - pnpm build
+- Ensure checkout fetch-depth: 0
+
+Do NOT install compose plugin inside devcontainer.
+Do NOT require Docker inside devcontainer.
+🟦 PHASE 5 — TERMINAL (DEVCONTAINER) INSTALL & VALIDATE
+What you run (Devcontainer terminal)
+Bash
+pnpm install
+pnpm lint
+pnpm typecheck
+pnpm test
+pnpm build
+pnpm tools:validate-inputs
+pnpm tools:check-env
+pnpm tools:check-product-sync
+
+Fix failures before proceeding.
+
+🟦 PHASE 6 — TERMINAL (HOST) RUN INFRA VIA COMPOSE
+What you run (Host terminal)
+
+Dev:
+
+Bash
+docker compose -f deploy/compose/dev/docker-compose.yml up -d
+
+Stage:
+
+Bash
+docker compose -f deploy/compose/stage/docker-compose.yml up -d
+
+Prod:
+
+Bash
+docker compose -f deploy/compose/prod/docker-compose.yml up -d
+
+Compose remains default.
+
+🟦 PHASE 7 — FOREVER UPDATE LOOP (FEATURE CHANGES)
+What you do manually
+
+Edit ONLY docs/PRODUCT.md
+
+What you do in Copilot Chat
+
+Paste:
+
+Plain text
+FEATURE UPDATE REQUEST (STRICTEST)
+
+1) Read:
+   - docs/PRODUCT.md
+   - inputs.yml
+   - inputs.schema.json
+   - docs/CHANGELOG_AI.md
+   - docs/IMPLEMENTATION_MAP.md
+   - project.memory.md
+
+2) Summarize current state (Implementation Map) + recent history (Change Log).
+3) Ask clarifying questions only if required.
+
+4) Implement PRODUCT.md changes by:
+   - updating inputs.yml (and inputs.schema.json if needed)
+   - modifying ONLY impacted modules/files
+   - adding Prisma migrations if needed
+   - updating tests if needed
+   - preserving baselines (security/observability/compose-first)
+   - NOT touching .devcontainer
+
+5) After modifications, MUST update:
+   - docs/CHANGELOG_AI.md
+   - docs/IMPLEMENTATION_MAP.md
+
+Do NOT regenerate entire repo.
+What you run (Devcontainer terminal)
+Bash
+pnpm lint
+pnpm typecheck
+pnpm test
+pnpm build
+pnpm tools:validate-inputs
+pnpm tools:check-env
+pnpm tools:check-product-sync
+🟦 PHASE 8 — MULTI-TENANT UPGRADE (OPTIONAL)
+
+When ready, update inputs.yml:
+
+YAML
+tenancy:
+  mode: multi
+
+Then run (devcontainer terminal):
+
+Bash
+pnpm tools:validate-inputs
+pnpm test
+pnpm tools:check-product-sync
+
+Then Copilot prompt:
+
+Plain text
+Upgrade to multi-tenant based on inputs.yml.
+Read logs first.
+Modify only impacted modules.
+Add migrations.
+Update CHANGELOG_AI + IMPLEMENTATION_MAP.
+🟦 PHASE 9 — ENABLE K8S (OPTIONAL FUTURE)
+
+Update inputs.yml:
+
+YAML
+deploy:
+  k8s:
+    enabled: true
+
+Run:
+
+Bash
+pnpm tools:validate-inputs
+pnpm tools:check-product-sync
+
+Copilot:
+
+Plain text
+Activate Kubernetes generation (kustomize preferred).
+Read logs first.
+Keep Compose intact.
+Update CHANGELOG_AI + IMPLEMENTATION_MAP.
+🟦 PHASE 10 — CI GOVERNANCE (STRICTEST VARIANT)
+CI MUST FAIL unless:
+
+If docs/PRODUCT.md changed, then these MUST also change:
+
+inputs.yml
+
+inputs.schema.json
+
+docs/CHANGELOG_AI.md
+
+docs/IMPLEMENTATION_MAP.md
+
+This is the strictest possible discipline.
+
+✅ STRICTEST IMPLEMENTATION: tools/check-product-sync.mjs
+
+Create tools/check-product-sync.mjs with the following behavior:
+
+Detect changed files in PR and push
+
+If docs/PRODUCT.md changed:
+
+require inputs.yml, inputs.schema.json, docs/CHANGELOG_AI.md, docs/IMPLEMENTATION_MAP.md also changed
+
+Fail with clear message listing missing files
+
+Works locally too
+
+In CI ensure checkout fetch-depth: 0
+
+If you already have the earlier version, update REQUIRED list to include inputs.schema.json.
+
+REQUIRED list must be:
+
+Plain text
+inputs.yml
+inputs.schema.json
+docs/CHANGELOG_AI.md
+docs/IMPLEMENTATION_MAP.md
+✅ FINAL DOUBLE-CHECK LIST (EVERYTHING INCLUDED)
+
+Manual folders created:
+
+.devcontainer/ ✅
+
+docs/ ✅
+
+tools/ ✅
+
+Manual files created:
+
+.gitignore ✅
+
+.nvmrc ✅
+
+package.json (bootstrap) ✅
+
+.devcontainer/devcontainer.json with customizations + search.exclude ✅
+
+.devcontainer/Dockerfile ✅
+
+project.memory.md ✅
+
+docs/PRODUCT.md ✅
+
+docs/CHANGELOG_AI.md ✅
+
+docs/IMPLEMENTATION_MAP.md ✅
+
+AI-generated files:
+
+inputs.yml ✅
+
+inputs.schema.json ✅
+
+scaffolding under apps/, packages/, deploy/, .github/, tools/ ✅
+
+Terminal commands separated clearly:
+
+Devcontainer: pnpm + tools scripts ✅
+
+Host: docker compose ✅
+
+CI strictest enforcement:
+
+requires inputs + schema + changelog + implementation map when PRODUCT changes ✅
+
+Want me to paste the updated “strictest” tools/check-product-sync.mjs code too?
+
+If you say “paste it”, I’ll output the exact final script version with inputs.schema.json enforced and the GitHub Actions snippet (with fetch-depth: 0) in one go.
 
