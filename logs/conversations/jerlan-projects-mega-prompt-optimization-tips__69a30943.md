@@ -2,7 +2,7 @@
 
 - Conversation ID: 69a30943-3324-8324-9dd5-cb2b5da9dd46
 - Title: Jerlan Projects - Mega Prompt Optimization Tips
-- Captured: 2026-03-03T15:40:24.619Z
+- Captured: 2026-03-03T15:43:27.897Z
 - URL: https://chatgpt.com/g/g-p-698ace27fcb08191853e12827657b08e-jerlan-projects/c/69a30943-3324-8324-9dd5-cb2b5da9dd46
 
 ---
@@ -4879,4 +4879,93 @@ A version optimized for local LLM ingestion
 A “technical only” version without narrative framing
 
 Tell me which variant you want.
+
+## User
+
+ok change topic, what if I use Qwen 3.5 9b? what is your thoughts about that?
+
+## Assistant
+
+If by “Qwen 3.5 9B” you mean a Qwen 3.5–series 9B-size model, my take is:
+
+Yes, 9B is a meaningful step up from 7B for code quality and “following instructions”.
+
+On your RTX 4050 6GB, it’s likely to run partly on GPU + partly on CPU (depending on quantization + context size), so it may feel slower than Qwen2.5-Coder 7B.
+
+It still won’t magically fix Continue’s “Agent/Plan ⚠️” unless the model + runtime are set up for reliable tool/function calling.
+
+What’s “real” about Qwen 3.5 right now
+
+Qwen3.5 was announced/released as a new series (starting with a very large multimodal model), and Ollama has been actively adding/fixing support for Qwen 3.5 models. 
+Qwen
++1
+
+So it’s a moving target: model availability, tags, and tool-calling behavior can vary depending on what exact Qwen3.5 variant you’re using and your Ollama version.
+
+Should you use it for your hybrid AI coding setup?
+When Qwen “~9B” is a good idea
+
+Use it if you want:
+
+Better code generation than 7B (fewer silly mistakes)
+
+Better spec-following for medium tasks
+
+More stable refactors (still not “agent-perfect”)
+
+When it’s not worth it
+
+Skip it if you care most about:
+
+Speed (9B often slows down on 6GB VRAM)
+
+Agent/tool reliability (not guaranteed by “bigger model”; tool calling needs correct templates & capability config)
+
+Long context (KV cache eats VRAM fast; bigger model + longer context = more CPU offload)
+
+Performance reality on RTX 4050 6GB
+
+With 9B, you’ll usually need:
+
+Quantization (e.g., Q4/Q5)
+
+Shorter context (to avoid KV cache blowing VRAM)
+
+Expect some GPU/CPU split in Ollama, which can be noticeably slower—Ollama even has recent fixes for Qwen 3.5 when split across GPU & CPU. 
+GitHub
+
+About Continue “Agent/Plan ⚠️”
+
+Continue warns when it isn’t confident the model supports tool/function calling. Continue lets you configure “model capabilities” to improve behavior, but the underlying requirement is still: the model + runtime must reliably produce structured tool outputs. 
+docs.continue.dev
++1
+
+So: 9B helps “coding”, but doesn’t automatically make “agent mode” reliable.
+
+What I recommend for you (practical)
+
+Keep Qwen2.5-Coder 7B as your fast default for editing/scaffolding.
+
+Try the Qwen 3.x / 3.5-ish larger model as a “quality mode” for harder code generation/refactors.
+
+Keep API fallback (gpt-4o-mini or similar) for Plan/Agent / tool-heavy workflows.
+
+This matches your goal: free-first + small paid only when needed.
+
+Quick question (so I don’t guess wrong)
+
+What exact model string are you trying to run in Ollama? (e.g., qwen3.5:9b, qwen3:8b, etc.)
+
+If you paste the output of:
+
+Bash
+ollama list
+
+…I’ll tell you:
+
+whether it will fit well on your 6GB VRAM
+
+the best quantization/tag to pick
+
+and whether it’s likely to improve tool/agent behavior in Continue/Cline.
 
