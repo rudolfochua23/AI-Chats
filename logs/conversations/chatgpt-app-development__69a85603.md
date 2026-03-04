@@ -2,7 +2,7 @@
 
 - Conversation ID: 69a85603-7dd0-8398-a3e1-1cb799a82afe
 - Title: ChatGPT - App Development
-- Captured: 2026-03-04T16:57:35.121Z
+- Captured: 2026-03-04T17:00:37.982Z
 - URL: https://chatgpt.com/g/g-p-69a3c28d968c8191ac141b91a84da50a-app-development/c/69a85603-7dd0-8398-a3e1-1cb799a82afe
 
 ---
@@ -1939,5 +1939,137 @@ Permit becomes visible in vessel/profile history
 
 Workflow 3: Renewal tracking
 
-System lists
+System lists permits expiring in N days
+
+Staff triggers renewal (clone application + update dates)
+
+Notifications or dashboard cards show due renewals
+
+Workflow 4: Catch reporting / fish landing
+
+User selects fisherfolk and vessel (optional)
+
+Select landing site + date/time
+
+Add multiple species items and weights
+
+Save report
+
+Dashboard aggregates totals by date/site/species/barangay
+
+Workflow 5: Program enrollment & distribution
+
+Admin creates program
+
+Staff enrolls beneficiaries (from FMS)
+
+Staff records distributions with item + qty per beneficiary
+
+Reports show coverage, totals distributed, beneficiaries per barangay/category
+
+C) Left-side Menu Requirement (Modern Admin UI)
+
+You said: every module/app must have a modern left-side menu with submenus.
+
+Enterprise Shell (top-level)
+
+Dashboard
+
+FMS
+
+Fisherfolk List
+
+New Registration
+
+Reports
+
+FOM (Operations)
+
+Vessels
+
+Permits
+
+Applications
+
+Expiring / Renewals
+
+Printed Permits
+
+Catch / Landings
+
+Programs
+
+Programs List
+
+Enrollments
+
+Distributions
+
+Analytics / Reports
+
+Admin
+
+Users & Roles
+
+Reference Data (Barangays, Species, Landing Sites, Permit Types)
+
+Audit Logs
+
+This structure also maps cleanly to Next.js routes.
+
+D) Main Dashboard: “Latest charts you can imagine”
+
+Here are high-value charts/cards that fit your data and feel “modern”:
+
+Quick KPI cards
+
+Total registered fisherfolk
+
+New registrations this month
+
+Active vessels
+
+Permits expiring in 30 days
+
+Total catch (kg) last 7 days
+
+Programs ongoing + total beneficiaries
+
+Charts
+
+Catch volume trend (daily/weekly kg)
+
+Top species by volume (bar chart)
+
+Catch by landing site (bar chart)
+
+Permits status funnel (draft → submitted → approved → printed)
+
+Expiring permits timeline (next 7/30/60 days)
+
+Beneficiaries by program (bar chart)
+
+Registrations by barangay (bar chart)
+
+Tables
+
+Latest catch reports (most recent)
+
+Permits due for renewal (sorted by soonest expiry)
+
+Recent registrations / edits (audit-driven)
+
+Next step (no waiting): I can “save” this module blueprint too
+
+If you want me to store it as well (like we did earlier), tell me and I’ll save:
+
+module name + dependency rule
+
+entity list (Vessel/Permit/Catch/Program)
+
+left-menu IA
+
+dashboard chart set
+
+Also: when you’re ready, I can convert this into a clean PRODUCT.md for Module 2 that matches your spec-driven pipeline exactly.
 
