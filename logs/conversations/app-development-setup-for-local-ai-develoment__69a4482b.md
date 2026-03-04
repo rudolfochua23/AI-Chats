@@ -2,7 +2,7 @@
 
 - Conversation ID: 69a4482b-350c-83a0-b9e6-cbb380b99ea9
 - Title: App Development - Setup for Local AI Develoment
-- Captured: 2026-03-04T14:23:02.462Z
+- Captured: 2026-03-04T14:26:06.396Z
 - URL: https://chatgpt.com/g/g-p-69a3c28d968c8191ac141b91a84da50a-app-development/c/69a4482b-350c-83a0-b9e6-cbb380b99ea9
 
 ---
