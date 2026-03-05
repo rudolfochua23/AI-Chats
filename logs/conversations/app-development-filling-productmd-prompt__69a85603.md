@@ -2,7 +2,7 @@
 
 - Conversation ID: 69a85603-7dd0-8398-a3e1-1cb799a82afe
 - Title: App Development - Filling PRODUCT.md Prompt
-- Captured: 2026-03-05T08:55:37.249Z
+- Captured: 2026-03-05T08:58:41.328Z
 - URL: https://chatgpt.com/g/g-p-69a3c28d968c8191ac141b91a84da50a/c/69a85603-7dd0-8398-a3e1-1cb799a82afe
 
 ---
@@ -10230,4 +10230,174 @@ docs/PERMISSION_REGISTRY.md
 docs/ENTITY_REGISTRY.md
 
 docs/IMPLEMENTATION_MAP.md
+
+## User
+
+but if I just paste the whole phase 2 prompt to copilot, would it be also ok to do?
+
+## Assistant
+
+Yes — you can paste the whole Phase 2 prompt directly into Copilot, and it will work. 👍
+However, there are two small things to check first so it behaves correctly and doesn’t drift.
+
+1️⃣ Make sure the files the prompt tells Copilot to read actually exist
+
+Your prompt says:
+
+Read:
+- docs/PRODUCT.md
+- project.memory.md
+- docs/CHANGELOG_AI.md
+- docs/IMPLEMENTATION_MAP.md
+
+So ensure these exist.
+
+You already have:
+
+docs/PRODUCT.md
+docs/MODULE_REGISTRY.md
+docs/PERMISSION_REGISTRY.md
+docs/ENTITY_REGISTRY.md
+
+Just create these placeholders if missing:
+
+docs/CHANGELOG_AI.md
+Markdown
+# AI Change Log
+
+Tracks spec-driven AI changes made during development phases.
+docs/IMPLEMENTATION_MAP.md
+Markdown
+# Implementation Map
+
+This file will map specs to actual generated components such as:
+
+- database schema
+- API modules
+- UI pages
+- background jobs
+- queues
+- permissions
+project.memory.md
+
+If it doesn’t exist yet:
+
+Markdown
+# Project Memory
+
+Persistent context for the Blue Ocean Governance Platform.
+
+Modules currently defined:
+
+- Fisherfolk Management System (FMS)
+- Vessel Management System (VMS)
+- BlueSentinel (future)
+
+Tenancy model:
+
+Multi-LGU tenant architecture with subdomain routing.
+
+Example:
+
+calapan.fish.powerbyte.app  
+bluealliance.fish.powerbyte.app
+2️⃣ Yes, you can paste the Phase 2 prompt exactly as-is
+
+Your prompt:
+
+🟦 PHASE 2 — COPILOT DISCOVERY (QUESTIONS ONLY)
+
+is designed to make Copilot:
+
+read the specs
+
+ask questions
+
+NOT generate files yet
+
+So pasting it directly into Copilot is correct.
+
+What should happen after you run it
+
+Copilot will ask questions about things like:
+
+Infrastructure
+
+domains
+
+dev environment
+
+compose setup
+
+Security
+
+CORS
+
+rate limits
+
+CSRF
+
+Auth
+
+Keycloak realm
+
+client IDs
+
+JWT claims
+
+Storage
+
+MinIO buckets
+
+upload types
+
+file size limits
+
+Observability
+
+logs
+
+metrics
+
+tracing
+
+Background Jobs
+
+queues
+
+retry policy
+
+DLQ
+
+Important rule during Phase 2
+
+When Copilot answers or asks questions:
+
+✅ Answer them
+❌ Do NOT let it generate code yet
+
+Because the process is:
+
+PHASE 1  Spec creation
+PHASE 2  Discovery questions
+PHASE 3  Implementation planning
+PHASE 4  Code generation
+
+You are exactly at the right point now.
+
+What I recommend you do next
+
+1️⃣ Paste the Phase 2 prompt into Copilot
+2️⃣ Let Copilot ask its questions
+3️⃣ Copy those questions here
+
+Then I can help you:
+
+answer them correctly
+
+update your specs if needed
+
+prevent architectural mistakes
+
+This step will greatly reduce rework later.
 
