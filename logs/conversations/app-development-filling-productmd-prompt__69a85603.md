@@ -2,7 +2,7 @@
 
 - Conversation ID: 69a85603-7dd0-8398-a3e1-1cb799a82afe
 - Title: App Development - Filling PRODUCT.md Prompt
-- Captured: 2026-03-05T07:45:15.871Z
+- Captured: 2026-03-05T07:48:19.691Z
 - URL: https://chatgpt.com/g/g-p-69a3c28d968c8191ac141b91a84da50a/c/69a85603-7dd0-8398-a3e1-1cb799a82afe
 
 ---
@@ -10058,4 +10058,176 @@ Indexes:
 - Multi-select max 4 fisherfolk per print job.
 - Output is front and back layout on 200x300mm portrait paper.
 - Template must be editable (stored in IDPrintTemplate.templateJson).
+
+## User
+
+ok after this copy paste, what's next? should I run now the "🟦 PHASE 2 — COPILOT DISCOVERY (QUESTIONS ONLY)"?
+Here's the prompt you made in that content:
+
+We are building using Spec-Driven Platform V6 STRICTEST.
+
+1) Read:
+- docs/PRODUCT.md
+- project.memory.md
+- docs/CHANGELOG_AI.md
+- docs/IMPLEMENTATION_MAP.md
+
+2) Ask structured technical questions:
+- confirm app name (for devcontainer name replacement)
+- domain/base URLs for dev/stage/prod
+- tenancy mode now + upgrade plan
+- Keycloak issuer/client IDs/role claim mapping
+- RBAC permissions model
+- PII governance + retention/export/delete
+- storage buckets + mime + size limits
+- background jobs + DLQ/replay needs
+- observability exporters + metrics needs
+- security constraints (CORS, CSRF mode, rate limits)
+- confirm Compose default for dev/stage/prod
+- confirm K8s scaffold disabled by default
+
+Do NOT generate files yet.
+Only ask questions.
+
+## Assistant
+
+Yes — run PHASE 2 (Copilot Discovery: Questions Only) now, after you’ve pasted all the docs files.
+
+But before you run it, make sure you also have these two files in place, because your Phase 2 prompt explicitly tells Copilot to read them:
+
+docs/CHANGELOG_AI.md
+
+docs/IMPLEMENTATION_MAP.md
+
+If you don’t have them yet, create them as empty placeholders (literally a title) so Copilot won’t get “file not found” and drift.
+
+Minimal placeholders (copy-paste)
+
+docs/CHANGELOG_AI.md
+
+Markdown
+# AI Changelog
+
+docs/IMPLEMENTATION_MAP.md
+
+Markdown
+# Implementation Map
+
+(And you already have docs/PRODUCT.md + module specs + registries.)
+
+What PHASE 2 will do for you
+
+It will ask you the remaining implementation-critical decisions that aren’t fully locked by the specs yet, like:
+
+exact domain choices per env
+
+Keycloak realm/client/claims mapping
+
+tenancy routing handling (subdomain parsing + local dev)
+
+CORS + rate limits
+
+whether originals are stored for uploads or not
+
+job queue behavior (BullMQ retries/DLQ/replay)
+
+export formats and limits
+
+admin boundaries (what lgu_admin can/can’t manage)
+
+That’s exactly what you want before any code generation.
+
+Small update to your PHASE 2 prompt (so it matches your finalized architecture)
+
+Use this updated version (still “questions only”, but aligned with what we finalized):
+
+Plain text
+We are building using Spec-Driven Platform V6 STRICTEST.
+
+1) Read:
+- docs/PRODUCT.md
+- docs/MODULE_REGISTRY.md
+- docs/PERMISSION_REGISTRY.md
+- docs/ENTITY_REGISTRY.md
+- project.memory.md
+- docs/CHANGELOG_AI.md
+- docs/IMPLEMENTATION_MAP.md
+
+2) Ask structured technical questions (QUESTIONS ONLY, do not generate files):
+A) Platform identity & environments
+- confirm workspace name shown in UI (Blue Ocean Governance Platform is OK?)
+- confirm dev/stage/prod base domains
+- confirm tenant subdomain format: {lgu}.fish.powerbyte.app and bluealliance.fish.powerbyte.app
+- confirm local dev tenant routing approach (hosts file vs query param fallback vs localhost subpaths)
+
+B) Tenancy & data isolation
+- confirm tenancy is multi now (per LGU)
+- confirm if any shared/global reference data exists besides barangays
+- confirm whether barangays are global fixed list (Calapan-only for now) or tenant-configurable later
+
+C) Auth & RBAC (Keycloak)
+- confirm realm name
+- confirm client IDs for web and api
+- confirm issuer URL for dev/stage/prod
+- confirm JWT claims mapping for:
+  - userId
+  - tenantId (where should it live? claim name)
+  - roles claim name (realm_access.roles or resource_access?)
+- confirm whether roles are global + tenant roles, or tenant roles only with global_admin exception
+
+D) Module boundaries & menus
+- confirm module routes prefix convention: /fms/*, /vms/*, /bluesentinel/*
+- confirm if menus should be stored in DB (ModuleMenu) or generated from spec initially then stored
+
+E) Uploads & optimization
+- confirm allowed mime types and max sizes for images
+- confirm whether to store originals (yes/no)
+- confirm target sizes for thumb/display variants for photo and signature
+
+F) Background jobs (BullMQ)
+- confirm queues needed: media-optimization, exports, id-print
+- confirm retries/backoff defaults
+- confirm DLQ + replay requirement (yes)
+
+G) Reporting & dashboards
+- confirm LGU dashboard KPIs and charts priority list (top 10)
+- confirm Blue Alliance global dashboard KPIs and drill-down expectations
+
+H) Security & governance
+- confirm audit log events required across modules
+- confirm retention/export/right-to-delete policy targets
+- confirm CORS allowed origins (dev/stage/prod)
+- confirm rate limits for public/auth/upload endpoints
+- confirm CSRF approach for Next.js + API
+
+I) Infra defaults
+- confirm docker compose services baseline (postgres, redis, keycloak, minio)
+- confirm whether k8s scaffold is disabled by default
+
+Only ask questions. Do not generate code or files.
+After you run PHASE 2, what’s next
+
+Once you answer those questions, you run PHASE 3 (Scaffolding / Implementation Map updates) in your process (whatever your V6 defines), and only then start generating:
+
+Prisma schema from ENTITY_REGISTRY.md
+
+NestJS modules + controllers
+
+Next.js routes + pages
+
+Module menus + permission guards
+
+Upload optimization job + storage buckets
+
+ID Printing job + template system
+
+If you want to be extra safe: after PHASE 2 outputs questions, paste your answers back here and I’ll convert them into final updates to:
+
+docs/PRODUCT.md
+
+docs/PERMISSION_REGISTRY.md
+
+docs/ENTITY_REGISTRY.md
+
+docs/IMPLEMENTATION_MAP.md
 
