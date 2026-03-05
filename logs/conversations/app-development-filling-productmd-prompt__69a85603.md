@@ -2,7 +2,7 @@
 
 - Conversation ID: 69a85603-7dd0-8398-a3e1-1cb799a82afe
 - Title: App Development - Filling PRODUCT.md Prompt
-- Captured: 2026-03-05T07:33:02.889Z
+- Captured: 2026-03-05T07:36:06.291Z
 - URL: https://chatgpt.com/g/g-p-69a3c28d968c8191ac141b91a84da50a/c/69a85603-7dd0-8398-a3e1-1cb799a82afe
 
 ---
@@ -9835,4 +9835,227 @@ Fields:
 - validityMonths (int)
 - isActive (boolean, default true)
 - createdAt (datetime)
+
+Constraints:
+- unique(tenantId, code)
+
+---
+
+## Entity: PermitApplication
+Tracks apply -> review -> approve -> print.
+
+Fields:
+- id (UUID)
+- tenantId (UUID)
+- applicationNumber (string) // unique per tenant, human-readable
+- permitTypeId (UUID, FK -> PermitType.id)
+- applicantFisherfolkId (UUID, FK -> Fisherfolk.id)
+- vesselId (UUID, nullable FK -> Vessel.id)
+- status (enum: draft | submitted | under_review | approved | rejected | printed | cancelled | expired)
+- submittedAt (datetime, nullable)
+- reviewedAt (datetime, nullable)
+- approvedAt (datetime, nullable)
+- printedAt (datetime, nullable)
+- reviewerUserId (UUID, nullable FK -> User.id)
+- approverUserId (UUID, nullable FK -> User.id)
+- validFrom (date, nullable)
+- validTo (date, nullable)
+- remarks (text, nullable)
+- rejectionReason (text, nullable)
+- createdAt (datetime)
+- updatedAt (datetime)
+
+Constraints:
+- unique(tenantId, applicationNumber)
+
+Indexes:
+- (tenantId, status)
+- (tenantId, applicantFisherfolkId)
+- (tenantId, vesselId)
+
+---
+
+## Entity: PermitDocument
+Printable artifact for a permit.
+
+Fields:
+- id (UUID)
+- tenantId (UUID)
+- permitApplicationId (UUID, FK -> PermitApplication.id)
+- documentNo (string, unique per tenant)
+- pdfMediaObjectId (UUID, FK -> MediaObject.id)
+- printedByUserId (UUID, FK -> User.id)
+- printedAt (datetime)
+- reprintCount (int, default 0)
+
+Constraints:
+- unique(tenantId, documentNo)
+- unique(tenantId, permitApplicationId)
+
+---
+
+## Entity: LandingSite (reference)
+Fields:
+- id (UUID)
+- tenantId (UUID)
+- name (string)
+- barangayId (UUID, FK -> Barangay.id, optional)
+- isActive (boolean, default true)
+- createdAt (datetime)
+
+Constraints:
+- unique(tenantId, name)
+
+---
+
+## Entity: Species (reference)
+Fields:
+- id (UUID)
+- tenantId (UUID, nullable) // if shared globally set null, else per tenant
+- localName (string)
+- commonName (string, optional)
+- scientificName (string, optional)
+- isActive (boolean, default true)
+- createdAt (datetime)
+
+Constraints:
+- unique(tenantId, localName)
+
+---
+
+## Entity: CatchReport
+Represents a landing/trip report.
+
+Fields:
+- id (UUID)
+- tenantId (UUID)
+- reportDateTime (datetime)
+- fisherfolkId (UUID, nullable FK -> Fisherfolk.id) // who reported (optional if staff)
+- reportedByUserId (UUID, FK -> User.id)
+- vesselId (UUID, nullable FK -> Vessel.id)
+- landingSiteId (UUID, FK -> LandingSite.id)
+- tripStart (datetime, nullable)
+- tripEnd (datetime, nullable)
+- notes (text, nullable)
+- createdAt (datetime)
+
+Indexes:
+- (tenantId, reportDateTime)
+- (tenantId, landingSiteId)
+- (tenantId, vesselId)
+
+---
+
+## Entity: CatchReportItem
+Fields:
+- id (UUID)
+- tenantId (UUID)
+- catchReportId (UUID, FK -> CatchReport.id)
+- speciesId (UUID, FK -> Species.id)
+- weightKg (decimal)
+- pricePerKg (decimal, nullable)
+- valueAmount (decimal, nullable) // optional derived
+- createdAt (datetime)
+
+Constraints:
+- unique(tenantId, catchReportId, speciesId)
+
+Indexes:
+- (tenantId, catchReportId)
+
+---
+
+## Entity: Program
+Fields:
+- id (UUID)
+- tenantId (UUID)
+- name (string)
+- description (text, nullable)
+- programType (enum: training | cash | equipment | subsidy | inputs | other)
+- startDate (date, nullable)
+- endDate (date, nullable)
+- status (enum: planned | ongoing | closed)
+- createdAt (datetime)
+- updatedAt (datetime)
+
+Indexes:
+- (tenantId, status)
+
+---
+
+## Entity: ProgramEnrollment
+Fields:
+- id (UUID)
+- tenantId (UUID)
+- programId (UUID, FK -> Program.id)
+- fisherfolkId (UUID, FK -> Fisherfolk.id)
+- enrolledAt (datetime)
+- status (enum: enrolled | removed | completed)
+
+Constraints:
+- unique(tenantId, programId, fisherfolkId)
+
+Indexes:
+- (tenantId, programId)
+
+---
+
+## Entity: Distribution
+Represents a distribution event.
+
+Fields:
+- id (UUID)
+- tenantId (UUID)
+- programId (UUID, FK -> Program.id)
+- distributionDate (date)
+- location (string, nullable)
+- createdByUserId (UUID, FK -> User.id)
+- createdAt (datetime)
+
+Indexes:
+- (tenantId, programId)
+
+---
+
+## Entity: DistributionItem
+Represents items distributed to a beneficiary.
+
+Fields:
+- id (UUID)
+- tenantId (UUID)
+- distributionId (UUID, FK -> Distribution.id)
+- fisherfolkId (UUID, FK -> Fisherfolk.id)
+- itemName (string)
+- quantity (decimal)
+- unit (string, nullable)
+- notes (text, nullable)
+- createdAt (datetime)
+
+Indexes:
+- (tenantId, distributionId)
+
+---
+
+# F) Cross-Module Contract Rules (Critical)
+
+## Rule: FMS is the identity source of truth
+- Other modules must reference fisherfolk via `fisherfolkId` (FK).
+- Other modules must not duplicate fisherfolk identity fields.
+
+## Rule: Tenant isolation
+- All tenant-owned entities must include `tenantId`.
+- All queries in LGU subdomain scope must filter by `tenantId`.
+- global_admin may query across tenants.
+
+## Rule: Barangay display
+- Always display barangay as: Brgy. {name}, City of Calapan
+
+## Rule: Image optimization everywhere
+- Any image upload in any module must pass through MediaObject optimization variants.
+
+## Rule: ID Printing
+- ID printing is an FMS feature.
+- Multi-select max 4 fisherfolk per print job.
+- Output is front and back layout on 200x300mm portrait paper.
+- Template must be editable (stored in IDPrintTemplate.templateJson).
 
