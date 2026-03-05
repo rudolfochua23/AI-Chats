@@ -2,7 +2,7 @@
 
 - Conversation ID: 69a85603-7dd0-8398-a3e1-1cb799a82afe
 - Title: App Development - Filling PRODUCT.md Prompt
-- Captured: 2026-03-05T14:02:15.372Z
+- Captured: 2026-03-05T14:05:19.234Z
 - URL: https://chatgpt.com/g/g-p-69a3c28d968c8191ac141b91a84da50a/c/69a85603-7dd0-8398-a3e1-1cb799a82afe
 
 ---
@@ -16884,5 +16884,35 @@ Use an explicit header or explicit method, e.g.:
 
 x-allow-cross-tenant: 1 (only for global admin routes)
 
-OR better: have a separ
+OR better: have a separate service GlobalPrismaService used only in global controllers
+
+I recommend the separate service approach (harder to misuse).
+
+Recommended policy (simple and safe)
+
+Default: even global_admin gets tenant-scoped enforcement.
+
+Only specific global endpoints may bypass enforcement.
+
+Those endpoints must opt in via:
+
+GlobalPrismaService OR
+
+x-allow-cross-tenant: 1 and extra guard that checks the route is global.
+
+Your next Copilot task (copy-paste)
+
+If you want Copilot to implement this safely without hallucinating, paste this in Copilot:
+
+Plain text
+Implement TenantPrismaService (request-scoped) using Prisma $use middleware to enforce tenantId for all tenant-scoped models listed in IMPLEMENTATION_MAP.md. Ensure:
+- missing tenantId blocks requests
+- create/createMany inject tenantId
+- findMany/update/delete inject where.tenantId
+- global_admin bypass is DISABLED by default
+- bypass is only allowed via explicit GlobalPrismaService used only in global controllers (no header bypass)
+Update modules to inject TenantPrismaService instead of PrismaClient.
+Update schema.prisma so all tenant-scoped models include tenantId and composite unique keys where needed.
+
+If you want, I can tailor the TENANT_MODELS set precisely to your current ENTITY_REGISTRY once you paste it (or just the list of models).
 
