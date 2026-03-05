@@ -2,7 +2,7 @@
 
 - Conversation ID: 69a85603-7dd0-8398-a3e1-1cb799a82afe
 - Title: App Development - Filling PRODUCT.md Prompt
-- Captured: 2026-03-05T12:30:16.763Z
+- Captured: 2026-03-05T12:33:19.931Z
 - URL: https://chatgpt.com/g/g-p-69a3c28d968c8191ac141b91a84da50a/c/69a85603-7dd0-8398-a3e1-1cb799a82afe
 
 ---
@@ -12761,4 +12761,134 @@ You are ready to start PHASE 4 generation.
 If you'd like, I can also show you one more small improvement that will make your system much safer:
 
 👉 The “Tenant Safety Guard” pattern used by Stripe and Shopify (prevents accidental cross-tenant data leaks).
+
+## User
+
+I really dont understand how to fix it, so here's the lines that probably what we need to override. Please just give the complete replacement context:
+
+### Resolution Flow
+
+**Next.js Middleware** (apps/web/middleware.ts):
+1. Extract hostname from request
+2. Parse subdomain: {subdomain}.fish.powerbyte.app or {subdomain}.localhost
+3. If bluealliance → set workspace context to Blue Alliance
+4. If valid LGU subdomain → set tenant context (via header or cookie)
+5. Local dev fallback: check ?tenant= query param
+6. Pass x-tenant-id header to API calls
+
+**NestJS Middleware** (TenantResolverMiddleware):
+1. Read x-tenant-id header from request
+2. Validate tenant exists and is active (cache in Redis, TTL 5 min)
+3. Attach tenantId to request context
+4. If missing/invalid → 403 Forbidden (except for global routes)
+
+**Tenant Scope Interceptor** (TenantScopeInterceptor):
+1. Automatically inject tenantId into all Prisma queries via WHERE clause
+2. Prevent cross-tenant data access at ORM level
+3. global_admin bypass: allowed to query across tenants when explicitly requested
+
+## Assistant
+
+Perfect — thanks for pasting the exact section. That makes this easy. 👍
+
+You only need to replace that entire block with the corrected version below.
+
+Just copy-paste this whole section over the one in IMPLEMENTATION_MAP.md.
+
+Markdown
+### Resolution Flow
+
+**Next.js Middleware** (`apps/web/middleware.ts`):
+
+1. Extract hostname from request
+2. Parse subdomain: `{subdomain}.fish.powerbyte.app` or `{subdomain}.localhost`
+3. If `bluealliance` → set workspace context to Blue Alliance
+4. If valid LGU subdomain → set tenant slug context (example: `calapan`)
+5. Local dev fallback: check `?tenant=` query parameter
+6. Frontend API client automatically sends header:
+
+
+x-tenant-slug: {tenantSlug}
+
+
+Example:
+
+
+x-tenant-slug: calapan
+
+
+This header is sent on every API request so the backend can resolve the tenant.
+
+---
+
+**NestJS Middleware** (`TenantResolverMiddleware`):
+
+1. Read `x-tenant-slug` header from request.
+
+Example:
+
+
+x-tenant-slug: calapan
+
+
+2. Lookup tenant by subdomain/slug:
+
+
+SELECT id FROM Tenant WHERE subdomain = 'calapan'
+
+
+3. Validate tenant exists and is active (cache result in Redis, TTL 60 seconds).
+
+4. Attach resolved tenantId to request context:
+
+
+request.tenantId = {tenantUUID}
+
+
+5. If slug is missing or tenant is invalid → return `403 Forbidden` (except for global Blue Alliance routes).
+
+---
+
+**Tenant Scope Interceptor** (`TenantScopeInterceptor`):
+
+1. Automatically inject `tenantId` into all Prisma queries via `WHERE tenantId = request.tenantId`.
+
+Example:
+
+
+SELECT * FROM Fisherfolk
+WHERE tenantId = request.tenantId
+
+
+2. Prevent cross-tenant data access at ORM level.
+
+3. `global_admin` bypass:
+   - allowed to query across tenants
+   - must explicitly specify tenant scope when doing global queries.
+What changed (in simple terms)
+
+Before:
+
+x-tenant-id: UUID
+
+After:
+
+x-tenant-slug: calapan
+
+Then the backend converts it to the UUID internally.
+
+This is better because:
+
+Old	Problem
+x-tenant-id	exposes database UUID
+x-tenant-slug	safe + human readable
+After you replace it
+
+Your IMPLEMENTATION_MAP.md is now fully correct, and you can safely proceed to:
+
+PHASE 4 — Code Generation
+
+If you'd like, I can also show you one optional improvement that will make your system extremely robust:
+
+👉 The "Tenant Safety Lock" used by Stripe and Shopify that prevents developers from accidentally running queries without tenant filtering.
 
