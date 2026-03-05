@@ -2,7 +2,7 @@
 
 - Conversation ID: 69a85603-7dd0-8398-a3e1-1cb799a82afe
 - Title: App Development - Filling PRODUCT.md Prompt
-- Captured: 2026-03-05T06:59:27.217Z
+- Captured: 2026-03-05T07:02:30.236Z
 - URL: https://chatgpt.com/g/g-p-69a3c28d968c8191ac141b91a84da50a/c/69a85603-7dd0-8398-a3e1-1cb799a82afe
 
 ---
@@ -6025,4 +6025,686 @@ Governance	BlueSentinel
 Analytics	Command Center
 
 If you want, I can show you a clean Module Registry design that will make your platform support 20+ apps later without breaking architecture.
+
+## User
+
+ok just a bit confused here, can you make now a clearly copy-paste prompt for BlueSentinel future development stub and for the main PRODUCT.md file
+
+## Assistant
+
+Good question — this is exactly where people get confused in spec-driven platforms, so I’ll give you two clean copy-paste files with no explanations mixed in.
+
+You will create two files only from this message:
+
+docs/PRODUCT.md
+docs/modules/bluesentinel/PRODUCT.md
+
+Everything below is ready to paste.
+
+1️⃣ COPY-PASTE → docs/PRODUCT.md
+Markdown
+# Product Definition
+
+## App Name
+Blue Ocean Governance Platform
+
+## Purpose
+The Blue Ocean Governance Platform is a multi-tenant enterprise system designed to support fisheries and marine governance operations across multiple Local Government Units (LGUs).
+
+The platform provides a unified workspace where operational modules such as fisherfolk registries, vessel management systems, permit workflows, fisheries monitoring, and program interventions operate within a shared environment.
+
+Each LGU operates its own isolated workspace containing its authorized modules and datasets. The top-level governing organization, Blue Alliance, maintains administrative oversight across all LGUs.
+
+The system ensures data integrity, operational efficiency, and governance visibility for sustainable fisheries and coastal protection.
+
+## Target Users
+
+### Blue Alliance Global Administrators
+The highest-level authority managing the entire platform ecosystem.
+
+Responsibilities:
+- manage LGU tenants
+- enable modules per LGU
+- oversee fisheries data across LGUs
+- monitor system dashboards
+
+Access domain example:
+
+bluealliance.fish.powerbyte.app
+
+### LGU Administrators
+Administrators responsible for a specific LGU.
+
+Responsibilities:
+- manage LGU users
+- oversee fisheries operations
+- manage module access for the LGU
+
+Example domain:
+
+calapan.fish.powerbyte.app
+
+### LGU Operational Staff
+Examples:
+
+- registration clerks
+- fisheries officers
+- permit processing staff
+- enumerators
+
+Responsibilities include:
+
+- fisherfolk registration
+- vessel management
+- permit workflows
+- catch monitoring
+- program management
+
+### Data Analysts
+Users who analyze operational statistics and reports.
+
+---
+
+## Core Entities
+
+### Tenant (LGU)
+
+Represents a municipality or LGU operating within the platform.
+
+Fields:
+
+- id
+- name
+- province
+- region
+- country
+- subdomain
+- status
+- createdAt
+
+Example:
+
+name: Calapan City  
+subdomain: calapan
+
+Every operational record must include:
+
+tenantId
+
+This ensures strict data isolation between LGUs.
+
+---
+
+### User
+
+Fields:
+
+- id
+- tenantId
+- name
+- email
+- role
+- status
+- createdAt
+
+Roles:
+
+- global_admin
+- lgu_admin
+- user
+- viewer
+
+---
+
+### Module
+
+Represents applications available in the workspace.
+
+Examples:
+
+- FMS (Fisherfolk Management System)
+- VMS (Vessel Management System)
+- BlueSentinel (future enforcement module)
+
+Fields:
+
+- id
+- name
+- code
+- description
+- isActive
+
+---
+
+### LGUModule
+
+Defines which modules are enabled for each LGU.
+
+Fields:
+
+- id
+- tenantId
+- moduleCode
+- isEnabled
+- createdAt
+
+---
+
+### Barangay (Reference Data)
+
+Barangay selections must follow the official list for Calapan City.
+
+Allowed values:
+
+Balingayan  
+Balite  
+Baruyan  
+Batino  
+Bayanan I  
+Bayanan II  
+Biga  
+Bondoc  
+Bucayao  
+Buhuan  
+Bulusan  
+Sta. Rita  
+Calero  
+Camansihan  
+Camilmil  
+Canubing I  
+Canubing II  
+Comunal  
+Guinobatan  
+Gulod  
+Gutad  
+Ibaba East  
+Ibaba West  
+Ilaya  
+Lalud  
+Lazareto  
+Libis  
+Lumangbayan  
+Mahal Na Pangalan  
+Maidlang  
+Malad  
+Malamig  
+Managpi  
+Masipit  
+Nag-Iba I  
+Navotas  
+Pachoca  
+Palhi  
+Panggalaan  
+Parang  
+Patas  
+Personas  
+Puting Tubig  
+Salong  
+San Antonio  
+San Vicente Central  
+San Vicente East  
+San Vicente North  
+San Vicente South  
+San Vicente West  
+Sta. Cruz  
+Sta. Isabel  
+Sto. Niño  
+Sapul  
+Silonay  
+Sta. Maria Village  
+Suqui  
+Tawagan  
+Tawiran  
+Tibag  
+Wawa  
+Nag-Iba II
+
+Display format everywhere in the system:
+
+Brgy. {BarangayName}, City of Calapan
+
+Example:
+
+Brgy. Camilmil, City of Calapan
+
+---
+
+## User Roles
+
+global_admin  
+Full platform control across all LGUs.
+
+lgu_admin  
+Manages users and operations inside an LGU.
+
+user  
+Operational staff.
+
+viewer  
+Read-only access.
+
+---
+
+## Main Workflows (step-by-step)
+
+### LGU Creation
+1. Blue Alliance creates an LGU tenant.
+2. System assigns a unique subdomain.
+3. Modules are enabled for that LGU.
+4. LGU administrators are created.
+
+### LGU Workspace Access
+1. User opens their LGU subdomain.
+2. System identifies tenant from the subdomain.
+3. System loads modules enabled for that LGU.
+
+### Workspace Navigation
+
+Example workspace layout:
+
+Dashboard
+
+Fisherfolk Management System
+- Fisherfolk List
+- Register Fisherfolk
+- Reports
+- ID Printing
+
+Vessel Management System
+- Vessels
+- Permit Applications
+- Permit Renewals
+- Catch Reports
+- Programs
+
+Analytics
+- Catch Analytics
+- Registration Reports
+
+Administration
+- Users
+- Roles
+- Reference Data
+- Audit Logs
+
+---
+
+## Realtime Features (if any)
+
+Not required in the initial release.
+
+Future possibilities:
+
+- dashboard live updates
+- enforcement alerts
+- permit notifications
+
+---
+
+## Background Jobs (if any)
+
+### Image Optimization Job
+
+Triggered when an image is uploaded.
+
+Steps:
+
+1. Validate file type and size
+2. Remove EXIF metadata
+3. Resize image to optimized display sizes
+4. Generate thumbnail version
+5. Store optimized variants
+
+Purpose:
+
+Prevent large image uploads from consuming excessive storage.
+
+---
+
+## Storage Requirements
+
+Supported uploads:
+
+- images
+- documents (future)
+
+Limits:
+
+max upload size: 10MB  
+max resolution: 8000px
+
+Images are automatically optimized for web display.
+
+Modules using uploads include:
+
+- FMS (photo, signature)
+- VMS (vessel images)
+- BlueSentinel (future enforcement evidence)
+
+---
+
+## Data Sensitivity
+
+The system stores personally identifiable information.
+
+Examples:
+
+- names
+- birthdates
+- addresses
+- contact numbers
+- photos
+- signatures
+
+Security measures:
+
+- audit logs
+- restricted editing of identity fields
+- access control by role
+- soft deletion policies
+
+---
+
+## Tenancy Model
+
+Tenancy Mode: Multi
+
+Each LGU operates as a separate tenant.
+
+All records must contain:
+
+tenantId
+
+LGU users cannot access data belonging to other LGUs.
+
+Exception:
+
+Blue Alliance administrators can access data across all LGUs.
+
+---
+
+## Environments Needed
+
+development  
+staging  
+production
+
+---
+
+## Domain / Base URL Expectations
+
+Primary domain:
+
+fish.powerbyte.app
+
+Tenant routing:
+
+{lgu}.fish.powerbyte.app
+
+Example:
+
+calapan.fish.powerbyte.app
+
+Blue Alliance global access:
+
+bluealliance.fish.powerbyte.app
+2️⃣ COPY-PASTE → docs/modules/bluesentinel/PRODUCT.md
+Markdown
+# Product Definition
+
+## App Name
+BlueSentinel
+
+Tagline:
+Empowering Sea Rangers with Smart Monitoring.
+
+## Purpose
+BlueSentinel is a future governance and enforcement monitoring system developed for Blue Alliance.
+
+The system will help monitor illegal fishing activities, record enforcement incidents, and coordinate marine protection operations.
+
+BlueSentinel may track both:
+
+- registered fisherfolk
+- non-registered individuals
+- suspected vessels
+- illegal fishing gear
+
+This module will be implemented after the LGU operational modules are stable.
+
+Current development focus remains on:
+
+- Fisherfolk Management System (FMS)
+- Vessel Management System (VMS)
+
+---
+
+## Target Users
+
+### Blue Alliance Enforcement Teams
+
+Examples:
+
+- sea rangers
+- marine protection officers
+- coastal patrol units
+
+Responsibilities:
+
+- monitor illegal fishing activity
+- document violations
+- coordinate with LGU ranger teams
+
+### LGU Ranger Teams
+
+Local enforcement units collaborating with Blue Alliance.
+
+Responsibilities:
+
+- assist in investigations
+- record local incidents
+- respond to enforcement requests
+
+---
+
+## Core Entities (Future)
+
+### Violator
+
+Represents a person involved in illegal fishing.
+
+Possible fields:
+
+- id
+- name
+- alias
+- nationality
+- contact details
+- notes
+
+Violators may or may not exist in FMS.
+
+---
+
+### EnforcementIncident
+
+Represents an illegal fishing incident.
+
+Possible fields:
+
+- id
+- incidentDate
+- location
+- description
+- status
+- reportingOfficer
+- tenantId
+
+---
+
+### SuspectedVessel
+
+Optional vessel involved in the incident.
+
+Possible fields:
+
+- id
+- vesselName
+- registrationNumber
+- vesselType
+
+May reference VMS vessels if registered.
+
+---
+
+### ConfiscatedGear
+
+Fishing gear seized during enforcement.
+
+Possible fields:
+
+- id
+- gearType
+- quantity
+- notes
+
+---
+
+### EvidenceMedia
+
+Media captured during enforcement operations.
+
+Examples:
+
+- photos
+- videos
+- documents
+
+---
+
+## User Roles
+
+blue_admin  
+Full access across all LGUs.
+
+blue_operator  
+Create and manage incidents.
+
+lgu_ranger  
+Respond to incidents assigned to their LGU.
+
+lgu_ranger_lead  
+Coordinate ranger teams.
+
+---
+
+## Main Workflows (Future)
+
+### Incident Reporting
+
+1. Enforcement officer records an incident.
+2. Incident details are captured.
+3. Evidence may be uploaded.
+4. Incident is assigned to Blue Alliance or LGU teams.
+
+### Assistance Request
+
+1. Blue Alliance creates enforcement request.
+2. System assigns request to LGU ranger teams.
+3. LGU rangers respond with updates.
+
+---
+
+## Realtime Features
+
+Potential future features:
+
+- patrol alerts
+- enforcement notifications
+- ranger communication
+
+---
+
+## Background Jobs
+
+Possible jobs:
+
+- evidence image optimization
+- media validation
+
+---
+
+## Storage Requirements
+
+Expected uploads:
+
+- incident photos
+- videos
+- documents
+
+Files follow the global media optimization policy.
+
+---
+
+## Data Sensitivity
+
+BlueSentinel may store sensitive enforcement data.
+
+Access must be restricted to authorized enforcement users.
+
+Audit logging is mandatory.
+
+---
+
+## Tenancy Model
+
+BlueSentinel supports dual-scope tenancy.
+
+Global scope:
+
+bluealliance.fish.powerbyte.app
+
+LGU scope:
+
+{lgu}.fish.powerbyte.app
+
+LGU users can only see:
+
+- incidents belonging to their LGU
+- incidents shared with their LGU by Blue Alliance.
+
+---
+
+## Environments Needed
+
+development  
+staging  
+production
+
+---
+
+## Domain / Base URL Expectations
+
+Examples:
+
+bluealliance.fish.powerbyte.app/bluesentinel
+
+calapan.fish.powerbyte.app/bluesentinel
+
+✅ Now your spec structure becomes:
+
+docs/
+   PRODUCT.md
+
+docs/modules/
+   fms/
+      PRODUCT.md
+
+   vms/
+      PRODUCT.md
+
+   bluesentinel/
+      PRODUCT.md
+
+If you want, the next very important thing we should build is the Enterprise Module Registry design, which will let your platform support 20+ future apps without modifying architecture.
 
