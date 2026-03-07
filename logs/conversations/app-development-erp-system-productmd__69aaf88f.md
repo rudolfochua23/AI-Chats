@@ -2,7 +2,7 @@
 
 - Conversation ID: 69aaf88f-2d94-839c-ae7c-6f9fdc90ad2d
 - Title: App Development - ERP System PRODUCT.md
-- Captured: 2026-03-07T10:09:37.060Z
+- Captured: 2026-03-07T10:12:39.131Z
 - URL: https://chatgpt.com/g/g-p-69a3c28d968c8191ac141b91a84da50a/c/69aaf88f-2d94-839c-ae7c-6f9fdc90ad2d
 
 ---
