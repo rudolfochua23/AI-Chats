@@ -2,7 +2,7 @@
 
 - Conversation ID: 69a85603-7dd0-8398-a3e1-1cb799a82afe
 - Title: App Development - Fisherfolk Management Information System
-- Captured: 2026-03-08T06:49:01.306Z
+- Captured: 2026-03-08T06:52:05.052Z
 - URL: https://chatgpt.com/g/g-p-69a3c28d968c8191ac141b91a84da50a-app-development/c/69a85603-7dd0-8398-a3e1-1cb799a82afe
 
 ---
@@ -18381,4 +18381,58 @@ The platform is designed to be used by several types of users. At the LGU level,
 At the Blue Alliance level, the users are regional administrators, analysts, and enforcement coordinators who oversee fisheries governance across multiple municipalities. They primarily use the platform for analytics, oversight, and cross-LGU coordination rather than day-to-day data entry.
 
 Overall, the purpose of the Blue Ocean Governance Platform is to provide a modern digital infrastructure for fisheries governance. By centralizing fisherfolk data, vessel registrations, permits, catch monitoring, and program management into a single platform, it enables governments to manage marine resources more effectively, support fisherfolk communities, and ensure sustainable fisheries practices.
+
+## User
+
+change the name Fisheries Information Management System
+
+## Assistant
+
+Got it. Here is the revised explanation with the platform renamed to “Fisheries Information Management System (FIMS)”. I also kept the same architecture and modules we designed.
+
+You can paste this directly when Claude asks “What is this app for and who will use it?”
+
+Fisheries Information Management System (FIMS) — Purpose and Users
+
+The Fisheries Information Management System (FIMS) is a multi-tenant digital platform designed to help local governments manage fisheries-related information such as fisherfolk registrations, fishing vessels, permits, catch monitoring, fisheries programs, and marine governance data.
+
+The system was created to modernize how coastal municipalities and cities manage fisheries records. In many local governments, information about fisherfolk, vessels, permits, and catch reports is still maintained using paper records or scattered spreadsheets. This makes it difficult to track identities, monitor fisheries activities, analyze trends, and implement programs effectively. FIMS centralizes all of these records into a single digital system that provides structured data management, operational tools, and analytics dashboards.
+
+The primary users of the system are Local Government Units (LGUs), particularly municipal or city agriculture offices, fisheries offices, and administrative staff responsible for fisheries management. These users register fisherfolk, manage vessel records, process permits, monitor fishing activities, and track government programs that support coastal communities.
+
+In addition to LGUs, the system supports a higher-level governing organization called Blue Alliance, which acts as a regional or national marine protection and fisheries oversight body. Blue Alliance administrators can view aggregated data across multiple LGUs to monitor fisheries activities, analyze trends, and support enforcement and conservation initiatives.
+
+The platform uses a multi-tenant architecture, meaning each LGU operates within its own isolated workspace while still being part of the same overall system. Each LGU accesses the platform through its own subdomain, such as:
+
+calapan.fish.powerbyte.app
+
+Within that workspace, LGU staff manage their own fisherfolk records, vessels, permits, and fisheries activities. Data from one LGU is isolated from other LGUs, ensuring proper governance and privacy. Meanwhile, Blue Alliance administrators access a global workspace through:
+
+bluealliance.fish.powerbyte.app
+
+From this workspace they can view aggregated analytics and oversee fisheries governance across all participating LGUs.
+
+The system is modular and organized around functional modules that appear as menu items within the main workspace interface. Each module focuses on a specific aspect of fisheries management and can be expanded as the platform grows.
+
+The first foundational module is the Fisherfolk Management System (FMS). This module maintains the official registry of fisherfolk within an LGU and serves as the foundation dataset for the entire platform. All other modules reference fisherfolk records when linking vessels, permits, or program beneficiaries.
+
+Within the Fisherfolk Management System, LGU staff can register fisherfolk and maintain their identity records. Each record includes information such as a unique ID number, full name, date of birth, barangay address, sex, contact number, and an RSBSA number if available. The system also records the fisherfolk’s activity category, such as boat owner/operator, capture fishing, gleaning, vendor, fish processing, or aquaculture.
+
+The module also supports capturing a fisherfolk’s photograph and signature, either by uploading images or capturing them directly through a camera or stylus input. These media files are automatically optimized by the system to ensure efficient storage. Each fisherfolk record has a detailed profile view that displays all personal information, categories, and media in a structured format. The system also supports generating printable fisherfolk identification cards using the stored data.
+
+The second major module is the Vessel Management System (VMS). This module manages fishing vessels and operational fisheries information. Each vessel record is linked to its owner, who must be a registered fisherfolk within the system. This ensures that all vessel ownership data is tied to verified identity records.
+
+The Vessel Management System supports vessel registration, permit applications, permit approval workflows, and permit document generation. LGU staff can process permit applications by reviewing submissions, approving or rejecting them, and printing official permits when necessary.
+
+Another key function of the VMS is catch and fish landing monitoring. Fisheries officers can record catch reports from fishing trips or landing sites, including species caught, catch volume, dates, and landing locations. Over time, these records build a dataset that allows local governments to analyze fisheries productivity, seasonal patterns, and species distribution.
+
+The system also includes features for managing government fisheries programs and interventions. These may include equipment distribution, training programs, financial subsidies, or other support initiatives for fisherfolk communities. Administrators can create programs, enroll beneficiaries, and track distribution events to ensure transparency and accountability.
+
+Both the Fisherfolk Management System and Vessel Management System feed data into a dashboard and analytics system. Each LGU has its own operational dashboard that displays key indicators such as the total number of registered fisherfolk, fisherfolk distribution by barangay, fisherfolk categories, vessel registrations, permit statuses, and catch volume trends. These dashboards help local officials monitor fisheries activity and make informed decisions.
+
+At the global level, Blue Alliance administrators have access to an aggregated analytics dashboard that functions as an “eagle-eye” command center. This dashboard provides an overview of fisheries data across all LGUs, including total fisherfolk registrations, vessel counts, permit statistics, and regional catch trends. It allows Blue Alliance to identify patterns, detect anomalies, and coordinate fisheries governance strategies.
+
+In the future, the platform will include an enforcement-focused module called BlueSentinel. This module will support marine rangers and enforcement teams in documenting illegal fishing incidents and other marine violations. Rangers will be able to record violator information, vessel details, fishing gear used, incident locations, and supporting evidence such as photos or reports. BlueSentinel will allow LGUs and Blue Alliance to work together more effectively in protecting marine ecosystems and enforcing fisheries regulations.
+
+Overall, the Fisheries Information Management System provides a comprehensive digital infrastructure for fisheries governance. By centralizing fisherfolk registration, vessel management, permits, catch monitoring, and program tracking into a single platform, it enables governments to manage marine resources more effectively, support fisherfolk communities, and promote sustainable fisheries practices.
 
