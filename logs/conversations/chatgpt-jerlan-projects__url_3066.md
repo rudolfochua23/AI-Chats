@@ -2,7 +2,7 @@
 
 - Conversation ID: url_3066646202
 - Title: ChatGPT - Jerlan Projects
-- Captured: 2026-02-28T15:29:42.858Z
+- Captured: 2026-03-08T11:20:40.787Z
 - URL: https://chatgpt.com/g/g-p-698ace27fcb08191853e12827657b08e-jerlan-projects/project
 
 ---
@@ -11,19 +11,23 @@
 
 Jerlan Projects
 
-from my recent chat here in chatGPT, we had created a Phase-based Spec Driven AI Mega Prompt System wherein you will just define what your app would be by just filling the single source of truth, the inputs.yml. and from that filem it will build the app based on the technologies we just planned on how an app that i described 
+
+
 
 Chats
 Sources
+Mega Prompt Optimization Tips
+- here's the link for you to review whats on Qwen3.5-9B: https://huggingface.co/Qwen/Qwen3.5-9B - then Help me tune quantization for RTX 4050 6GB -Design your final “best possible” model stack for you
+Mar 4
+Live Story Battles Concept
+- review whatever we had discussed here - generate an AI readable prompt of all this discussions we had because i want to transfer this conversation to my other chatGPT account
+Mar 1
 AI-driven App Architecture
 - ok this is actually fine now - give me a detailed prompt that can understand everything from start to finish of this AI Mega Prompt System you did so that I can continue what we had discussed here t
 Feb 28
 Devcontainer pnpm error fix
 i got this error inside devcontainer: efa69e824bca% pnpm install  ERR_PNPM_NO_PKG_MANIFEST  No package.json found in /workspace efa69e824bca% pnpm check:spec:dev  ERR_PNPM_NO_IMPORTER_MANIFEST_FOUND 
 Feb 26
-Live Story Battles Concept
-i want you to Break this into full product architecture, then design viral growth loop mechanics like TikTok’s early days
-Feb 24
 Exporting Conversations ChatGPT
 can you remove the long prefix before the name of the topic prompt?
 Feb 22
