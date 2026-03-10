@@ -2,7 +2,7 @@
 
 - Conversation ID: 69afdd5b-0b80-8324-928f-dceffd58b3dc
 - Title: FIMS Boss Presentation
-- Captured: 2026-03-10T09:14:10.750Z
+- Captured: 2026-03-10T09:17:13.205Z
 - URL: https://chatgpt.com/c/69afdd5b-0b80-8324-928f-dceffd58b3dc
 
 ---
@@ -1317,4 +1317,8 @@ I can also create a SUPER-PREMIUM executive architecture diagram (the type used 
 ## User
 
 no image is generated in canva
+
+## User
+
+can you fix the image in the User layer , the text are broken
 
