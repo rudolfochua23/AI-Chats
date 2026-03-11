@@ -2,7 +2,7 @@
 
 - Conversation ID: 69b1617b-bf58-8321-a2c6-3d08132c3c74
 - Title: Smoke Detector Installation High Ceilings
-- Captured: 2026-03-11T12:35:52.869Z
+- Captured: 2026-03-11T12:38:54.774Z
 - URL: https://chatgpt.com/c/69b1617b-bf58-8321-a2c6-3d08132c3c74
 
 ---
@@ -145,5 +145,104 @@ Ceiling Height	Best System
 25 m+	Aspirating system
 Important Code Considerations
 
-Follow NFPA 72 / local fire code
+Follow NFPA 72 / local fire code:
+
+Detector within 0.9 m (3 ft) of ceiling peak
+
+Avoid dead air space
+
+Minimum 100 mm (4 in) from ceiling edge
+
+Maintenance access required
+
+Pro Architectural Tip
+
+When designing high ceilings, plan the detector support during structural design.
+
+Embed:
+
+steel anchor plates
+
+electrical junction box
+
+conduit pathway
+
+This avoids ugly retrofit installations.
+
+✅ Most practical solution for homes with very high ceilings:
+Pendant-mounted smoke detector with a rigid conduit drop.
+
+If you'd like, I can also show you:
+
+3 professional mounting detail drawings (architectural style)
+
+A cheap DIY version that still meets safety practice
+
+Common mistakes when installing detectors in high ceilings
+
+Just tell me.
+
+## User
+
+3 professional mounting detail drawings (architectural style)
+A cheap DIY version that still meets safety practice
+
+## Assistant
+
+Below are three professional architectural mounting details commonly used by engineers for very high ceilings, followed by a low-cost DIY solution that is still safe and practical.
+
+1. Pendant Rod Mounted Smoke Detector
+
+(Most common professional solution)
+
+Used in:
+
+churches
+
+gymnasiums
+
+vaulted residential ceilings
+
+auditoriums
+
+Detail Drawing
+SECTION DETAIL
+
+        STRUCTURAL CEILING / SLAB
+     ───────────────────────────────
+           Expansion Anchor Bolt
+                 │
+                 │
+         Steel Threaded Rod
+           (10mm – 12mm Ø)
+                 │
+                 │
+           EMT Conduit
+         (Electrical wiring)
+                 │
+        ┌─────────────────┐
+        │  Junction Box   │
+        │ (Metal 4"x4")   │
+        └─────────────────┘
+                 │
+        Smoke Detector Base
+                 │
+           Smoke Detector
+Recommended Dimensions
+
+Drop: 900–1500 mm (3–5 ft) below ceiling
+
+Rod diameter: 10–12 mm
+
+Junction box: 4” square steel box
+
+Advantages
+
+✔ Easy maintenance
+✔ Faster smoke detection
+✔ Professional clean look
+
+2. Wall Mounted Detector for Vaulted Ceilings
+
+(Architectural workaround for steep or inaccessible c
 
