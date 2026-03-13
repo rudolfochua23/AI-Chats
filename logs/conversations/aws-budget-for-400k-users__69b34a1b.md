@@ -2,7 +2,7 @@
 
 - Conversation ID: 69b34a1b-7930-839c-b641-859ca23ac2c7
 - Title: AWS Budget for 400k Users
-- Captured: 2026-03-13T11:29:55.620Z
+- Captured: 2026-03-13T11:32:57.563Z
 - URL: https://chatgpt.com/c/69b34a1b-7930-839c-b641-859ca23ac2c7
 
 ---
@@ -719,4 +719,172 @@ That gives you a setup that is not just running, but also ready to scale horizon
 AWS Documentation
 
 I can also turn this into a cheapest possible AWS architecture table with estimated monthly costs for a streaming app.
+
+## User
+
+yes please do that and lets say i want this setup can accommodate up to 400k users non concurrent
+
+## Assistant
+
+Below is a realistic low-cost AWS production architecture for a movie streaming app that can support ~400k registered users (non-concurrent).
+This assumes:
+
+Only a small fraction are active at once (ex: 200–1,000 concurrent users)
+
+Videos are delivered mostly via CDN (CloudFront) instead of your servers
+
+Movies stored in S3
+
+Backend handles auth, metadata, subscriptions, etc.
+
+Target budget: ~$120–$200/month
+
+Cheapest Practical AWS Architecture (Streaming App)
+Layer	AWS Service	Example configuration	Est. monthly cost	Purpose
+DNS	Route53	Hosted zone	$1–$2	Domain routing
+SSL	ACM	Free certificate	$0	HTTPS
+Network	VPC	default VPC	$0	Isolated network
+Load balancing	Application Load Balancer	1 ALB	$18–$25	Distribute traffic
+App compute	EC2	2 × t4g.small	$25	Backend API
+Auto scaling	Auto Scaling Group	2–5 servers	$0	Automatic scaling
+Database	RDS PostgreSQL	db.t4g.micro or small	$15–$35	Users, subscriptions
+Object storage	S3	1–2 TB video storage	$23–$46	Movie files
+CDN	CloudFront	video delivery	$20–$60	Streaming performance
+Video transcoding	MediaConvert	pay per job	$10–$30	Convert uploads
+Logging	CloudWatch	logs + metrics	$5–$10	Monitoring
+Security	AWS WAF	basic rules	$5–$10	Protect app
+Estimated Total Monthly Cost
+Scenario	Monthly
+Very light traffic	$110 – $130
+Normal early platform	$130 – $170
+Busy month	$170 – $220
+Why This Can Handle 400k Users
+
+Because registered users ≠ active users.
+
+Example platform metrics:
+
+Metric	Typical ratio
+Registered users	400,000
+Monthly active users	40k–80k
+Daily active users	5k–10k
+Concurrent viewers	200–800
+
+The CDN handles most traffic, not your servers.
+
+Flow:
+
+User
+  ↓
+CloudFront CDN
+  ↓
+S3 (video storage)
+
+Your backend only handles:
+
+login
+
+subscription
+
+recommendations
+
+metadata
+
+analytics
+
+How Streaming Actually Works
+
+Video delivery path:
+
+User
+ ↓
+CloudFront CDN
+ ↓
+S3 bucket
+
+App backend path:
+
+User
+ ↓
+Load Balancer
+ ↓
+EC2 servers
+ ↓
+RDS database
+
+This architecture keeps the expensive compute layer very small.
+
+Auto Scaling Setup
+Component	Scaling
+EC2	2 → 5 instances
+CloudFront	unlimited
+S3	unlimited
+RDS	vertical scaling
+
+Scaling triggers:
+
+CPU > 70%
+
+request count
+
+network throughput
+
+Expected Capacity
+
+This architecture can realistically support:
+
+Metric	Capacity
+Registered users	~400k
+Concurrent viewers	~500–1000
+Video storage	several TB
+Monthly streaming traffic	several TB
+
+Because CloudFront and S3 scale automatically.
+
+Cost Driver (Important)
+
+For streaming apps the biggest cost is bandwidth, not servers.
+
+Example:
+
+Streaming traffic	Cost
+2 TB	~$40
+10 TB	~$200
+50 TB	~$800
+
+Servers remain cheap.
+
+Cheapest Optimizations
+
+To keep the platform under $150/month early:
+
+1️⃣ Use Graviton instances (t4g)
+2️⃣ Store videos in S3 + CloudFront only
+3️⃣ Avoid large RDS until needed
+4️⃣ Cache aggressively in CDN
+5️⃣ Keep 2 backend servers
+
+Final Recommended Cheapest Setup
+Service	Setup
+EC2	2 × t4g.small
+ALB	1
+RDS	db.t4g.micro
+S3	movie storage
+CloudFront	CDN streaming
+MediaConvert	transcoding
+Auto Scaling	2–5 instances
+
+Monthly estimate:
+
+👉 $130–$180
+
+✅ This is the lowest realistic AWS production budget for a movie streaming platform that can support ~400k registered users.
+
+If you want, I can also show you:
+
+How Netflix-style platforms actually scale to millions of users
+
+How to cut this to $80/month using serverless
+
+The exact S3 + CloudFront video pipeline used by streaming startups (much cheaper than people think).
 
