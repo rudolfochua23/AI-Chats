@@ -2,7 +2,7 @@
 
 - Conversation ID: 69b34a1b-7930-839c-b641-859ca23ac2c7
 - Title: AWS Budget for 400k Users
-- Captured: 2026-03-13T12:39:52.248Z
+- Captured: 2026-03-13T12:42:55.161Z
 - URL: https://chatgpt.com/c/69b34a1b-7930-839c-b641-859ca23ac2c7
 
 ---
@@ -1275,4 +1275,43 @@ That full stack is what makes the platform capable of supporting hundreds of tho
 Users → CDN → Load Balancer → Autoscaling Servers → Database + Storage
 
 It will be much easier for non-technical clients to understand.
+
+## User
+
+yes please but still include the budget matrix table and make Grand Total at the bottom of the table more or less also
+make the 2️⃣ Architecture Diagram (simple visual flow) in an image to be more visually presentable
+
+## Assistant
+
+I created the presentation with:
+
+Architecture diagram (visual flow)
+
+Budget matrix table
+
+EC2 row highlighted to show what people mean by “servers”
+
+Grand Total row at the bottom
+
+Client explanation slide
+
+You can download it here:
+
+aws_streaming_full_stack_client_presentation.pptx
+
+You can upload this directly to Canva, PowerPoint, or Google Slides.
+
+What the slides include:
+
+Title slide
+
+Visual architecture diagram
+
+Landscape budget matrix table with EC2 highlighted
+
+Grand Total monthly estimate
+
+Client explanation: why a server is only one component of the stack
+
+If you want, I can also make a much more polished architecture image (AWS-style diagram like Netflix/Uber presentations) that will look much clearer and more impressive for clients or investors.
 
