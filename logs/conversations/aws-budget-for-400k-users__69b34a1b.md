@@ -2,7 +2,7 @@
 
 - Conversation ID: 69b34a1b-7930-839c-b641-859ca23ac2c7
 - Title: AWS Budget for 400k Users
-- Captured: 2026-03-13T11:42:06.386Z
+- Captured: 2026-03-13T11:45:08.499Z
 - URL: https://chatgpt.com/c/69b34a1b-7930-839c-b641-859ca23ac2c7
 
 ---
@@ -891,4 +891,145 @@ The exact S3 + CloudFront video pipeline used by streaming startups (much cheape
 ## User
 
 can you make it a little bit higher like a medium size server, with auto scaling for 2-5 server that's correct you suggested. but the server will serve movie streaming and social media app
+
+## Assistant
+
+Yes. For a movie streaming + social media app, I’d move your app tier to 2–5 EC2 t4g.medium instances behind an Application Load Balancer, with RDS, S3, CloudFront, and a small Redis/ElastiCache layer. t4g.medium is a sensible “medium” starting point for general-purpose app servers, and EC2 Auto Scaling itself has no extra service fee beyond the EC2 and CloudWatch resources you use. 
+Amazon Web Services, Inc.
++2
+Amazon Web Services, Inc.
++2
+
+I’m using US East (N. Virginia) style public pricing as a planning baseline. Actual cost will vary by region, storage size, request volume, and especially video bandwidth, which is the biggest wildcard for a streaming product. AWS’s pricing pages are pay-as-you-go and region-dependent. 
+Amazon Web Services, Inc.
++3
+Amazon Web Services, Inc.
++3
+Amazon Web Services, Inc.
++3
+
+Recommended baseline stack
+Component	Recommended setup	Why it’s needed	Est. monthly
+EC2 app tier	2–5 × t4g.medium	API, auth, social feed, comments, admin, playback/session logic	$49.06–$122.64
+Auto Scaling Group	1 group, min 2 / desired 2 / max 5	Scales app servers automatically	$0
+Application Load Balancer	1 ALB	Distributes traffic to healthy app servers	~$20–$35
+RDS PostgreSQL	db.t4g.medium to start	Users, subscriptions, posts, comments, metadata	~$47.45 + storage/backups
+RDS storage	100–200 GB	Database storage	~$10–$25
+ElastiCache / Redis	small starter node or serverless budget	Feed/session/cache/rate-limit hot data	~$15–$40
+S3 Standard	1 TB starter media/storage	Videos, thumbnails, images, static files	~$23 per TB stored
+CloudFront	1 distribution	Delivers video/images globally, reduces origin load	usage-based
+EBS for EC2	100 GB per app server	App disk/logs	~$8 per 100 GB per server
+CloudWatch	logs + alarms	Monitoring and autoscaling signals	~$5–$15
+ACM	1 certificate	HTTPS	$0
+Route 53	hosted zone + DNS queries	Domain routing	~$1–$3
+WAF	basic managed rules	Public-app protection	~$5–$20
+
+The EC2 math above comes from the public t4g.medium on-demand hourly price of $0.0336/hour, which works out to $24.53/month each, $49.06/month for 2, and $122.64/month for 5 at 730 hours. For RDS, a current public instance listing shows db.t4g.medium starting at $0.065/hour, or about $47.45/month, while AWS’s official RDS pricing page confirms storage, backups, and usage are billed separately and that T classes can also incur CPU credit charges above baseline. 
+Vantage
++2
+Amazon Web Services, Inc.
++2
+
+What I would actually deploy
+
+For your case, I’d use this as the smallest medium-size production shape:
+
+Layer	My pick
+App servers	2 × t4g.medium at launch, autoscale to 5
+Database	RDS PostgreSQL db.t4g.medium
+Cache	Small Redis
+Object storage	S3
+Video delivery	CloudFront
+Load balancing	1 ALB
+Scaling	ASG min 2 / max 5
+Monitoring	CloudWatch + alarms
+Security	ACM + WAF + security groups
+
+That setup is enough for 400k registered users as long as they are not concurrent, because the heavy video delivery should come from CloudFront + S3, not from your EC2 instances. CloudFront is built to reduce origin load and cache content at the edge, while S3 is pay-as-you-go object storage with no minimum charge. 
+Amazon Web Services, Inc.
++3
+Amazon Web Services, Inc.
++3
+Amazon Web Services, Inc.
++3
+
+Estimated monthly budget
+1) Core infrastructure, excluding heavy streaming bandwidth
+
+This is the part you can budget as your “base burn.”
+
+Scenario	Estimated monthly
+Lean launch: 2 app servers running most of the time	~$175–$260
+Normal month: mix of 2–3 app servers	~$210–$320
+Busy month: app tier often at 5 servers	~$290–$430
+
+That estimate assumes:
+
+EC2 app tier: $49–$123
+
+ALB: ~$20–$35
+
+RDS + storage: ~$60–$90
+
+Redis/cache: ~$15–$40
+
+EBS: ~$16–$40
+
+S3 stored media: ~$23 per TB
+
+CloudWatch / Route 53 / WAF / misc: ~$15–$45 
+Amazon Web Services, Inc.
++2
+Amazon Web Services, Inc.
++2
+
+2) Streaming bandwidth
+
+This is the part that can blow up your bill.
+
+For a streaming app, data transfer and CDN usage often matter more than server count. AWS’s CloudFront pricing is usage-based, and S3 also charges for requests and data-related operations on top of storage. 
+Amazon Web Services, Inc.
++1
+
+A practical way to think about it:
+
+If your catalog is small and viewing hours are still low, you may stay close to the core infrastructure budget above.
+
+Once viewing hours rise, CloudFront transfer can become your largest line item very quickly. 
+Amazon Web Services, Inc.
++1
+
+Best answer in one line
+
+For a medium-size 2–5 server setup that supports a movie streaming + social media app and is ready for autoscaling, I’d budget:
+
+about $200–$350/month base infrastructure, plus streaming bandwidth on top.
+A safer all-in planning number for early production is $300–$600/month, because video delivery can overtake compute costs fast. 
+Amazon Web Services, Inc.
++1
+
+My final recommended starter config
+Service	Starter choice
+EC2	2 × t4g.medium, autoscale to 5
+RDS	PostgreSQL db.t4g.medium
+Redis	small starter tier
+ALB	1
+S3	1–2 TB to start
+CloudFront	1 distribution
+WAF	basic managed rules
+CloudWatch	logs, CPU, latency, 5xx alarms
+
+That is the cheapest version I’d call realistically usable for your use case without undersizing the app tier. 
+Amazon Web Services, Inc.
++4
+Amazon Web Services, Inc.
++4
+Amazon Web Services, Inc.
++4
+
+I can turn this into a full monthly cost sheet with low / medium / high traffic cases next.
+
+## User
+
+make this canva ready presentation
 
