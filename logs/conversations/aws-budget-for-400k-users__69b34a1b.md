@@ -2,7 +2,7 @@
 
 - Conversation ID: 69b34a1b-7930-839c-b641-859ca23ac2c7
 - Title: AWS Budget for 400k Users
-- Captured: 2026-03-13T11:45:08.499Z
+- Captured: 2026-03-13T11:48:11.139Z
 - URL: https://chatgpt.com/c/69b34a1b-7930-839c-b641-859ca23ac2c7
 
 ---
@@ -1032,4 +1032,108 @@ I can turn this into a full monthly cost sheet with low / medium / high traffic 
 ## User
 
 make this canva ready presentation
+
+## Assistant
+
+I created a Canva-ready PowerPoint presentation for you.
+
+You can download it here and upload it directly to Canva:
+
+aws_streaming_app_architecture.pptx
+
+Canva supports importing .pptx, so once uploaded you can:
+
+change fonts and colors
+
+add icons and diagrams
+
+apply Canva templates
+
+export as pitch deck / PDF
+
+The slides include:
+
+Architecture overview
+
+EC2 autoscaling (2–5 servers)
+
+RDS database layer
+
+S3 + CloudFront streaming pipeline
+
+Redis caching
+
+Security stack
+
+Monitoring
+
+Estimated monthly infrastructure cost
+
+Scaling path for growth
+
+If you'd like, I can also create a much more polished investor-style deck (with diagrams, architecture visuals, and icons) that looks closer to a startup pitch or tech architecture presentation.
+
+## User
+
+i dont need to much of explanation..just provide a clear table of all the features needed to run the app i told you for 400k users non concurrent. make a budget for every feature per month basis
+
+## Assistant
+
+Below is a clean, budget-focused table of the core AWS services needed to run a movie streaming + social media app that can support ~400k registered users (non-concurrent) with 2–5 medium servers autoscaling.
+
+Assumptions:
+
+Region similar to US-East
+
+2 EC2 servers running normally, scaling up to 5 during spikes
+
+1–2 TB media storage
+
+Moderate traffic
+
+Prices are monthly estimates
+
+AWS Infrastructure Budget (400k users non-concurrent)
+Layer	AWS Service	Configuration	Monthly Cost (USD)	Purpose
+DNS	Route53	Hosted zone + queries	$1 – $3	Domain routing
+SSL	ACM	TLS certificate	$0	HTTPS
+Network	VPC	Default VPC	$0	Network isolation
+Traffic distribution	Application Load Balancer	1 ALB	$20 – $35	Distribute traffic
+Compute (App servers)	EC2	t4g.medium × 2–5	$49 – $123	Backend API & app
+Autoscaling	Auto Scaling Group	min 2 / max 5	$0	Scale servers
+Server storage	EBS	~100GB per server	$16 – $40	Instance disk
+Database	RDS PostgreSQL	db.t4g.medium	$60 – $90	Users, posts, subscriptions
+Cache layer	ElastiCache Redis	small instance	$15 – $40	Social feed caching
+Media storage	S3	1–2 TB storage	$23 – $46	Store movie files
+CDN streaming	CloudFront	1 distribution	$20 – $80	Video delivery
+Monitoring	CloudWatch	logs + alarms	$5 – $15	Metrics
+Security	AWS WAF	basic rules	$5 – $20	Protect app
+Total Estimated Monthly Cost
+Scenario	Monthly Budget
+Low traffic	$220 – $260
+Normal traffic	$260 – $340
+Busy month	$340 – $450
+Expected Capacity
+Metric	Capacity
+Registered users	~400,000
+Concurrent users	~300–1000
+Media storage	1–2 TB
+Autoscaling servers	2–5
+Minimum Server Layout
+Component	Count
+EC2 servers	2–5
+RDS database	1
+Redis cache	1
+Load balancer	1
+CloudFront CDN	1
+S3 storage	1 bucket
+Biggest Cost Drivers
+Service	Reason
+CloudFront	streaming bandwidth
+S3	video storage
+RDS	persistent database
+
+Compute (EC2) is not the main cost in streaming platforms.
+
+If you'd like, I can also make a second table showing the cheapest possible setup (~$120-$180/month) and a large-scale setup for 1M users, so you can see how the architecture evolves.
 
