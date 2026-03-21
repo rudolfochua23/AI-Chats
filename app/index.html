@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Chat Consolidator</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <header>
+      <h1>AI Chat Consolidator</h1>
+      <p>Browse ChatGPT + Claude conversations, snapshots, and extracted code in one place.</p>
+    </header>
+
+    <main class="layout">
+      <aside class="panel conversations-panel">
+        <div class="panel-header">
+          <h2>Conversations</h2>
+          <input id="globalSearch" type="search" placeholder="Global search across all chats..." />
+        </div>
+        <div id="stats" class="stats"></div>
+        <ul id="conversationList" class="conversation-list"></ul>
+      </aside>
+
+      <section class="panel chat-panel">
+        <div class="panel-header sticky">
+          <h2 id="chatTitle">Select a conversation</h2>
+          <input id="chatSearch" type="search" placeholder="Search inside selected chat..." disabled />
+        </div>
+        <div id="chatContent" class="chat-content"></div>
+      </section>
+
+      <aside class="panel code-panel">
+        <div class="panel-header">
+          <h2>Recent Scripts & Code</h2>
+          <input id="codeSearch" type="search" placeholder="Filter scripts..." />
+        </div>
+        <ul id="codeList" class="code-list"></ul>
+      </aside>
+    </main>
+
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>
