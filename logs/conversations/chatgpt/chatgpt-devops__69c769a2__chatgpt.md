@@ -3,7 +3,7 @@
 - Platform: chatgpt
 - Conversation ID: 69c769a2-e62c-8321-8894-8282363bb48e
 - Title: DevOps - AWS Full Stack Deployment
-- Captured: 2026-03-28T11:50:02.934Z
+- Captured: 2026-03-28T11:53:05.446Z
 - URL: https://chatgpt.com/g/g-p-69be2c765b4c8191bdfe4002a1f09a53-devops/c/69c769a2-e62c-8321-8894-8282363bb48e
 
 ---
