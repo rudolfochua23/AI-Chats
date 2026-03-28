@@ -1112,6 +1112,11 @@ function renderChat() {
       });
     });
   }
+
+  // Auto-scroll to bottom (latest messages) when selecting a conversation
+  if (!query) {
+    els.chatContent.scrollTop = els.chatContent.scrollHeight;
+  }
 }
 
 function renderCodeList() {
