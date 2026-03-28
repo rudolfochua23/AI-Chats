@@ -626,7 +626,7 @@
 
   async function getExistingFileMeta(token, path) {
     const urlPath = encodeURIComponent(path).replace(/%2F/g, "/");
-    const url = `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${urlPath}?ref=${encodeURIComponent(BRANCH)}`;
+    const url = `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${urlPath}?ref=${encodeURIComponent(BRANCH)}&_=${Date.now()}`;
 
     try {
       const existing = await ghRequest(url, token, "GET");
