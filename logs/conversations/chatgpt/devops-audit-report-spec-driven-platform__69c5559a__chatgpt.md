@@ -3,7 +3,7 @@
 - Platform: chatgpt
 - Conversation ID: 69c5559a-c57c-8320-9d12-4c05055479cc
 - Title: DevOps - Audit Report Spec-Driven Platform
-- Captured: 2026-03-28T11:33:51.928Z
+- Captured: 2026-03-28T11:36:56.938Z
 - URL: https://chatgpt.com/g/g-p-69be2c765b4c8191bdfe4002a1f09a53/c/69c5559a-c57c-8320-9d12-4c05055479cc
 
 ---
