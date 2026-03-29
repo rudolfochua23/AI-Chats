@@ -2,11 +2,12 @@
 -include Makefile.local
 IMAGE ?= your-dockerhub-username/ai-chats
 
-.PHONY: dev dev-down dev-logs dev-restart release setup
+.PHONY: dev dev-down dev-logs dev-restart release setup test
 
 ## First-time setup — copy example files to real ones
 setup:
 	@test -f docker-compose.dev.yml || (cp docker-compose.dev.example.yml docker-compose.dev.yml && echo "Created docker-compose.dev.yml")
+	@test -f docker-compose.staging.yml || (cp docker-compose.staging.example.yml docker-compose.staging.yml && echo "Created docker-compose.staging.yml")
 	@test -f docker-compose.komodo.yml || (cp docker-compose.komodo.example.yml docker-compose.komodo.yml && echo "Created docker-compose.komodo.yml")
 	@test -f .env.dev || (cp .env.example .env.dev && echo "Created .env.dev — edit with your values")
 	@test -f tampermonkey-script.md || (cp tampermonkey-script.example.md tampermonkey-script.md && echo "Created tampermonkey-script.md — edit API_URL")

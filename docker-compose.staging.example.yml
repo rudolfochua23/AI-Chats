@@ -1,0 +1,136 @@
+# Staging Docker Compose (Komodo / Traefik) — uses Xendit TEST mode
+# Copy to docker-compose.staging.yml and set env vars in Komodo
+# Create a separate Komodo stack pointing to this file
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: ai-chats-staging-db
+    environment:
+      - POSTGRES_DB=aichats
+      - POSTGRES_USER=${PG_USER:-aichats}
+      - POSTGRES_PASSWORD=${PG_PASSWORD:?PG_PASSWORD is required}
+    volumes:
+      - ai-chats-staging-pgdata:/var/lib/postgresql/data
+    networks:
+      - ai-chats-staging-net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${PG_USER:-aichats}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  minio:
+    image: minio/minio:latest
+    container_name: ai-chats-staging-minio
+    command: server /data --console-address ":9001"
+    environment:
+      - MINIO_ROOT_USER=${S3_ACCESS_KEY:?S3_ACCESS_KEY is required}
+      - MINIO_ROOT_PASSWORD=${S3_SECRET_KEY:?S3_SECRET_KEY is required}
+    volumes:
+      - ai-chats-staging-minio:/data
+    networks:
+      - ai-chats-staging-net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  minio-init:
+    image: minio/mc:latest
+    container_name: ai-chats-staging-minio-init
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: >
+      /bin/sh -c "
+      mc alias set local http://minio:9000 $${S3_ACCESS_KEY} $${S3_SECRET_KEY};
+      mc mb local/$${S3_BUCKET:-aichats} --ignore-existing;
+      exit 0;
+      "
+    environment:
+      - S3_ACCESS_KEY=${S3_ACCESS_KEY:?S3_ACCESS_KEY is required}
+      - S3_SECRET_KEY=${S3_SECRET_KEY:?S3_SECRET_KEY is required}
+      - S3_BUCKET=${S3_BUCKET:-aichats}
+    networks:
+      - ai-chats-staging-net
+
+  app:
+    image: ${DOCKER_IMAGE:-your-dockerhub-username/ai-chats:latest}
+
+    container_name: ai-chats-staging
+
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.aichat-staging.rule=Host(`${COOKIE_DOMAIN:?COOKIE_DOMAIN is required}`)"
+      - "traefik.http.routers.aichat-staging.entrypoints=websecure"
+      - "traefik.http.routers.aichat-staging.tls=true"
+      - "traefik.http.routers.aichat-staging.tls.certresolver=letsencrypt"
+      - "traefik.http.services.aichat-staging.loadbalancer.server.port=4173"
+
+    environment:
+      - NODE_ENV=production
+      - PORT=4173
+      - DATABASE_URL=postgresql://${PG_USER:-aichats}:${PG_PASSWORD:?PG_PASSWORD is required}@db:5432/aichats
+      - SESSION_SECRET=${SESSION_SECRET:?SESSION_SECRET is required}
+      - COOKIE_SECURE=true
+      - COOKIE_DOMAIN=${COOKIE_DOMAIN:?COOKIE_DOMAIN is required}
+      - APP_ADMIN_USERNAME=${APP_ADMIN_USERNAME:?APP_ADMIN_USERNAME is required}
+      - APP_ADMIN_EMAIL=${APP_ADMIN_EMAIL:-admin@localhost}
+      - APP_ADMIN_PASSWORD=${APP_ADMIN_PASSWORD:?APP_ADMIN_PASSWORD is required}
+      - SMTP_HOST=${SMTP_HOST:-}
+      - SMTP_PORT=${SMTP_PORT:-587}
+      - SMTP_USER=${SMTP_USER:-}
+      - SMTP_PASS=${SMTP_PASS:-}
+      - SMTP_FROM=${SMTP_FROM:-}
+      - APP_URL=${APP_URL:?APP_URL is required}
+      - S3_ENDPOINT=http://minio:9000
+      - S3_BUCKET=${S3_BUCKET:-aichats}
+      - S3_REGION=${S3_REGION:-us-east-1}
+      - S3_ACCESS_KEY=${S3_ACCESS_KEY:?S3_ACCESS_KEY is required}
+      - S3_SECRET_KEY=${S3_SECRET_KEY:?S3_SECRET_KEY is required}
+      - S3_FORCE_PATH_STYLE=true
+      - XENDIT_SECRET_KEY=${XENDIT_SECRET_KEY:-}
+      - XENDIT_CALLBACK_TOKEN=${XENDIT_CALLBACK_TOKEN:-}
+      - XENDIT_PLAN_AMOUNT=${XENDIT_PLAN_AMOUNT:-200}
+      - XENDIT_PLAN_CURRENCY=${XENDIT_PLAN_CURRENCY:-PHP}
+
+    networks:
+      - ai-chats-staging-net
+      - proxy
+
+    depends_on:
+      db:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+
+    restart: unless-stopped
+
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:4173/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  ai-chats-staging-pgdata:
+    name: ai-chats-staging-pgdata
+  ai-chats-staging-minio:
+    name: ai-chats-staging-minio
+
+networks:
+  ai-chats-staging-net:
+    name: ai-chats-staging-net
+  proxy:
+    external: true

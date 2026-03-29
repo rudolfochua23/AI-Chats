@@ -6,8 +6,9 @@
 tampermonkey-script.md
 Makefile.local
 
-# Docker compose (dev only — use .example as template)
+# Docker compose (local only — use .example as template)
 docker-compose.dev.yml
+docker-compose.staging.yml
 
 # Node dependencies
 node_modules/
