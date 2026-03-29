@@ -37,11 +37,11 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Trigger Komodo redeploy
+      - name: Trigger Komodo staging redeploy
         continue-on-error: true
         run: |
-          if [ -n "${{ secrets.KOMODO_WEBHOOK_URL }}" ]; then
-            curl -sS -X POST "${{ secrets.KOMODO_WEBHOOK_URL }}" \
+          if [ -n "${{ secrets.KOMODO_STAGING_WEBHOOK_URL }}" ]; then
+            curl -sS -X POST "${{ secrets.KOMODO_STAGING_WEBHOOK_URL }}" \
               -H "Content-Type: application/json" \
               -H "X-GitHub-Event: push" \
               -d '{"ref":"refs/heads/main","after":"${{ github.sha }}"}' || true
