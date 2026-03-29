@@ -169,6 +169,8 @@ function renameBookmark(conversationId, bookmark, newName) {
   }
 }
 
+const AUTH_OVERLAY_KEYS = ['loginOverlay', 'registerOverlay', 'verifyOverlay', 'forgotOverlay', 'resetOverlay'];
+
 bootstrap();
 
 async function bootstrap() {
@@ -246,8 +248,6 @@ async function loadConversationDetail(id) {
   const conv = await response.json();
   return conv;
 }
-
-const AUTH_OVERLAY_KEYS = ['loginOverlay', 'registerOverlay', 'verifyOverlay', 'forgotOverlay', 'resetOverlay'];
 
 function showAuthOverlay(overlayKey) {
   AUTH_OVERLAY_KEYS.forEach((key) => {

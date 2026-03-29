@@ -19,6 +19,9 @@ services:
 
     volumes:
       - ai-chats-dev-auth:/app/.auth
+      - ./app:/app/app
+      - ./server.js:/app/server.js
+      - ./db.js:/app/db.js
 
     networks:
       - ai-chats-dev-net
