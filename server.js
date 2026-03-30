@@ -559,6 +559,15 @@ app.post('/api/subscription/upgrade-storage', requireAuth, async (req, res) => {
       return;
     }
 
+    // Only allow upgrade when storage usage is at 80% or above
+    const used = Number(user.storage_used_bytes) || 0;
+    const limit = Number(user.storage_limit_bytes) || 0;
+    if (limit > 0 && used / limit < 0.8) {
+      const pct = Math.round((used / limit) * 100);
+      res.status(400).json({ ok: false, error: `Storage is only ${pct}% full. You can upgrade when usage reaches 80%.` });
+      return;
+    }
+
     const newTier = currentTier + 1;
     const newAmount = db.priceForTier(newTier);
 

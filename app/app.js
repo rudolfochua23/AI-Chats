@@ -490,6 +490,8 @@ function bindAuthEvents() {
         const upgradeStorageBtn = document.getElementById('upgradeStorageBtn');
         const monthlyPriceLabel = document.getElementById('monthlyPriceLabel');
 
+        const storageWarning = document.getElementById('storageWarning');
+
         if (isPremium) {
           storageBarSection.hidden = false;
           upgradeHint.hidden = true;
@@ -497,22 +499,35 @@ function bindAuthEvents() {
           const limit = Number(acct.storage_limit_bytes || 0);
           const pct = limit > 0 ? Math.min(100, (used / limit) * 100) : 0;
           storageBarFill.style.width = `${pct}%`;
-          // Warn when storage is over 80% full
           storageBarFill.style.background = pct >= 80 ? '#ff6b6b' : '';
           storageLabel.textContent = limit > 0
             ? `${formatBytes(used)} / ${formatBytes(limit)} used`
             : `${formatBytes(used)} used`;
 
-          // Show current monthly price and upgrade button
+          // Show current monthly price
           const currentTier = acct.storage_tier || 1;
           const monthlyPrice = currentTier * 2;
           monthlyPriceLabel.textContent = `Current plan: $${monthlyPrice}/mo for ${currentTier * 5} GB`;
           monthlyPriceLabel.hidden = false;
 
-          if (acct.subscription_status === 'active' && currentTier < 20) {
-            upgradeStorageBtn.textContent = `Add 5 GB (+$2/mo → $${(currentTier + 1) * 2}/mo)`;
-            upgradeStorageBtn.hidden = false;
+          // Storage warning + upgrade button only at 80%+
+          if (pct >= 80 && acct.subscription_status === 'active') {
+            storageWarning.hidden = false;
+            storageWarning.classList.remove('success');
+            storageWarning.classList.add('error');
+            if (pct >= 100) {
+              storageWarning.textContent = 'Storage full — new file uploads will be blocked. Upgrade to continue saving attachments.';
+            } else {
+              storageWarning.textContent = `Storage is ${Math.round(pct)}% full — approaching your limit. Consider upgrading.`;
+            }
+            if (currentTier < 20) {
+              upgradeStorageBtn.textContent = `Add 5 GB (+$2/mo → $${(currentTier + 1) * 2}/mo)`;
+              upgradeStorageBtn.hidden = false;
+            } else {
+              upgradeStorageBtn.hidden = true;
+            }
           } else {
+            storageWarning.hidden = true;
             upgradeStorageBtn.hidden = true;
           }
         } else {
@@ -520,6 +535,7 @@ function bindAuthEvents() {
           upgradeHint.hidden = false;
           upgradeStorageBtn.hidden = true;
           monthlyPriceLabel.hidden = true;
+          storageWarning.hidden = true;
         }
 
         // Subscription buttons
@@ -639,7 +655,7 @@ function bindAuthEvents() {
   document.getElementById('upgradeStorageBtn')?.addEventListener('click', async () => {
     const btn = document.getElementById('upgradeStorageBtn');
     const currentText = btn.textContent;
-    if (!confirm(`Upgrade your storage? Your monthly rate will increase by $2. ${currentText}`)) return;
+    if (!confirm(`Upgrade your storage? Your monthly rate will increase by $2.\n\n${currentText}\n\nThis new rate will be auto-debited monthly.`)) return;
     const subStatus = document.getElementById('subStatus');
     btn.disabled = true;
     setAuthStatus(subStatus, 'Upgrading storage...', 'success');
@@ -651,24 +667,31 @@ function bindAuthEvents() {
         return;
       }
       const newTier = resp.storageTier;
-      setAuthStatus(subStatus, `Storage upgraded to ${newTier * 5} GB. New rate: $${newTier * 2}/mo.`, 'success');
-      // Update UI immediately
+      const newLimit = resp.storageLimitBytes;
+      setAuthStatus(subStatus, `Storage upgraded to ${newTier * 5} GB. New monthly rate: $${newTier * 2}/mo (auto-debited).`, 'success');
+
+      // Update monthly price label
       const monthlyPriceLabel = document.getElementById('monthlyPriceLabel');
       monthlyPriceLabel.textContent = `Current plan: $${newTier * 2}/mo for ${newTier * 5} GB`;
+
+      // Recalculate storage bar with new limit
       const storageLabel = document.getElementById('storageLabel');
       const storageBarFill = document.getElementById('storageBarFill');
-      const newLimit = resp.storageLimitBytes;
+      const storageWarning = document.getElementById('storageWarning');
       const currentUsedText = storageLabel.textContent.match(/^[\d.]+ \w+/)?.[0] || '0 B';
       storageLabel.textContent = `${currentUsedText} / ${formatBytes(newLimit)} used`;
-      // Recalculate bar percentage
+
       const usedMatch = currentUsedText.match(/([\d.]+)\s*(\w+)/);
-      if (usedMatch && newLimit > 0) {
-        const pct = Math.min(100, (parseFloat(usedMatch[1]) * bytesMultiplier(usedMatch[2]) / newLimit) * 100);
-        storageBarFill.style.width = `${pct}%`;
-        storageBarFill.style.background = pct >= 80 ? '#ff6b6b' : '';
-      }
-      // Update button for next tier
-      if (newTier < 20) {
+      const usedBytes = usedMatch ? parseFloat(usedMatch[1]) * bytesMultiplier(usedMatch[2]) : 0;
+      const pct = newLimit > 0 ? Math.min(100, (usedBytes / newLimit) * 100) : 0;
+      storageBarFill.style.width = `${pct}%`;
+      storageBarFill.style.background = pct >= 80 ? '#ff6b6b' : '';
+
+      // Hide upgrade button + warning if now below 80%
+      if (pct < 80) {
+        btn.hidden = true;
+        storageWarning.hidden = true;
+      } else if (newTier < 20) {
         btn.textContent = `Add 5 GB (+$2/mo → $${(newTier + 1) * 2}/mo)`;
         btn.disabled = false;
       } else {
