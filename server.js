@@ -95,7 +95,7 @@ app.post('/api/webhook/xendit', express.json({ limit: '1mb' }), async (req, res)
 
 app.use(express.json({ limit: '50mb' }));
 app.use(session({
-  name: 'ai_chats_sid',
+  name: 'chatstash_sid',
   secret: SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
@@ -269,7 +269,7 @@ app.post('/api/auth/login', async (req, res) => {
 });
 
 app.post('/api/auth/logout', (req, res) => {
-  req.session.destroy(() => { res.clearCookie('ai_chats_sid'); res.json({ ok: true }); });
+  req.session.destroy(() => { res.clearCookie('chatstash_sid'); res.json({ ok: true }); });
 });
 
 app.post('/api/auth/register', async (req, res) => {

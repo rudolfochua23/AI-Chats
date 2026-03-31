@@ -113,7 +113,7 @@ const els = {
 // =======================
 // BOOKMARKS (localStorage)
 // =======================
-const BOOKMARKS_KEY = 'ai_chats_bookmarks';
+const BOOKMARKS_KEY = 'chatstash_bookmarks';
 
 function loadAllBookmarks() {
   try { return JSON.parse(localStorage.getItem(BOOKMARKS_KEY) || '{}'); } catch { return {}; }

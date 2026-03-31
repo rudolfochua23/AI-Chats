@@ -5,15 +5,15 @@
 services:
   db:
     image: postgres:16-alpine
-    container_name: ai-chats-dev-db
+    container_name: chatstash-dev-db
     environment:
       POSTGRES_DB: aichats
       POSTGRES_USER: aichats
       POSTGRES_PASSWORD: aichats_dev
     volumes:
-      - ai-chats-dev-pgdata:/var/lib/postgresql/data
+      - chatstash-dev-pgdata:/var/lib/postgresql/data
     networks:
-      - ai-chats-dev-net
+      - chatstash-dev-net
     restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U aichats"]
@@ -27,7 +27,7 @@ services:
       dockerfile: Dockerfile
       target: development
 
-    container_name: ai-chats-dev
+    container_name: chatstash-dev
 
     ports:
       - "4287:4173"
@@ -46,7 +46,7 @@ services:
       - ./db.js:/app/db.js
 
     networks:
-      - ai-chats-dev-net
+      - chatstash-dev-net
 
     depends_on:
       db:
@@ -68,9 +68,9 @@ services:
         max-file: "3"
 
 volumes:
-  ai-chats-dev-pgdata:
-    name: ai-chats-dev-pgdata
+  chatstash-dev-pgdata:
+    name: chatstash-dev-pgdata
 
 networks:
-  ai-chats-dev-net:
-    name: ai-chats-dev-net
+  chatstash-dev-net:
+    name: chatstash-dev-net

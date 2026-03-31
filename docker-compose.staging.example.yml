@@ -5,15 +5,15 @@
 services:
   db:
     image: postgres:16-alpine
-    container_name: ai-chats-staging-db
+    container_name: chatstash-staging-db
     environment:
       - POSTGRES_DB=aichats
       - POSTGRES_USER=${PG_USER:-aichats}
       - POSTGRES_PASSWORD=${PG_PASSWORD:?PG_PASSWORD is required}
     volumes:
-      - ai-chats-staging-pgdata:/var/lib/postgresql/data
+      - chatstash-staging-pgdata:/var/lib/postgresql/data
     networks:
-      - ai-chats-staging-net
+      - chatstash-staging-net
     restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${PG_USER:-aichats}"]
@@ -23,15 +23,15 @@ services:
 
   minio:
     image: minio/minio:latest
-    container_name: ai-chats-staging-minio
+    container_name: chatstash-staging-minio
     command: server /data --console-address ":9001"
     environment:
       - MINIO_ROOT_USER=${S3_ACCESS_KEY:?S3_ACCESS_KEY is required}
       - MINIO_ROOT_PASSWORD=${S3_SECRET_KEY:?S3_SECRET_KEY is required}
     volumes:
-      - ai-chats-staging-minio:/data
+      - chatstash-staging-minio:/data
     networks:
-      - ai-chats-staging-net
+      - chatstash-staging-net
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "mc", "ready", "local"]
@@ -41,7 +41,7 @@ services:
 
   minio-init:
     image: minio/mc:latest
-    container_name: ai-chats-staging-minio-init
+    container_name: chatstash-staging-minio-init
     depends_on:
       minio:
         condition: service_healthy
@@ -56,20 +56,20 @@ services:
       - S3_SECRET_KEY=${S3_SECRET_KEY:?S3_SECRET_KEY is required}
       - S3_BUCKET=${S3_BUCKET:-aichats}
     networks:
-      - ai-chats-staging-net
+      - chatstash-staging-net
 
   app:
-    image: ${DOCKER_IMAGE:-your-dockerhub-username/ai-chats:latest}
+    image: ${DOCKER_IMAGE:-your-dockerhub-username/chatstash:latest}
 
-    container_name: ai-chats-staging
+    container_name: chatstash-staging
 
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.aichat-staging.rule=Host(`${COOKIE_DOMAIN:?COOKIE_DOMAIN is required}`)"
-      - "traefik.http.routers.aichat-staging.entrypoints=websecure"
-      - "traefik.http.routers.aichat-staging.tls=true"
-      - "traefik.http.routers.aichat-staging.tls.certresolver=letsencrypt"
-      - "traefik.http.services.aichat-staging.loadbalancer.server.port=4173"
+      - "traefik.http.routers.chatstash-staging.rule=Host(`${COOKIE_DOMAIN:?COOKIE_DOMAIN is required}`)"
+      - "traefik.http.routers.chatstash-staging.entrypoints=websecure"
+      - "traefik.http.routers.chatstash-staging.tls=true"
+      - "traefik.http.routers.chatstash-staging.tls.certresolver=letsencrypt"
+      - "traefik.http.services.chatstash-staging.loadbalancer.server.port=4173"
 
     environment:
       - NODE_ENV=production
@@ -99,7 +99,7 @@ services:
       - XENDIT_PLAN_CURRENCY=${XENDIT_PLAN_CURRENCY:-PHP}
 
     networks:
-      - ai-chats-staging-net
+      - chatstash-staging-net
       - proxy
 
     depends_on:
@@ -124,13 +124,13 @@ services:
         max-file: "3"
 
 volumes:
-  ai-chats-staging-pgdata:
-    name: ai-chats-staging-pgdata
-  ai-chats-staging-minio:
-    name: ai-chats-staging-minio
+  chatstash-staging-pgdata:
+    name: chatstash-staging-pgdata
+  chatstash-staging-minio:
+    name: chatstash-staging-minio
 
 networks:
-  ai-chats-staging-net:
-    name: ai-chats-staging-net
+  chatstash-staging-net:
+    name: chatstash-staging-net
   proxy:
     external: true

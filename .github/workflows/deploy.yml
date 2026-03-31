@@ -33,7 +33,7 @@ jobs:
           context: .
           target: production
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/ai-chats:latest
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/chatstash:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
 

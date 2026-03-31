@@ -1,15 +1,15 @@
 services:
   db:
     image: postgres:16-alpine
-    container_name: ai-chats-prod-db
+    container_name: chatstash-prod-db
     environment:
       - POSTGRES_DB=aichats
       - POSTGRES_USER=${PG_USER:-aichats}
       - POSTGRES_PASSWORD=${PG_PASSWORD:?PG_PASSWORD is required}
     volumes:
-      - ai-chats-prod-pgdata:/var/lib/postgresql/data
+      - chatstash-prod-pgdata:/var/lib/postgresql/data
     networks:
-      - ai-chats-prod-net
+      - chatstash-prod-net
     restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${PG_USER:-aichats}"]
@@ -19,15 +19,15 @@ services:
 
   minio:
     image: minio/minio:latest
-    container_name: ai-chats-prod-minio
+    container_name: chatstash-prod-minio
     command: server /data --console-address ":9001"
     environment:
       - MINIO_ROOT_USER=${S3_ACCESS_KEY:?S3_ACCESS_KEY is required}
       - MINIO_ROOT_PASSWORD=${S3_SECRET_KEY:?S3_SECRET_KEY is required}
     volumes:
-      - ai-chats-prod-minio:/data
+      - chatstash-prod-minio:/data
     networks:
-      - ai-chats-prod-net
+      - chatstash-prod-net
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "mc", "ready", "local"]
@@ -37,7 +37,7 @@ services:
 
   minio-init:
     image: minio/mc:latest
-    container_name: ai-chats-prod-minio-init
+    container_name: chatstash-prod-minio-init
     depends_on:
       minio:
         condition: service_healthy
@@ -52,20 +52,20 @@ services:
       - S3_SECRET_KEY=${S3_SECRET_KEY:?S3_SECRET_KEY is required}
       - S3_BUCKET=${S3_BUCKET:-aichats}
     networks:
-      - ai-chats-prod-net
+      - chatstash-prod-net
 
   app:
-    image: ${DOCKER_IMAGE:-your-dockerhub-username/ai-chats:latest}
+    image: ${DOCKER_IMAGE:-your-dockerhub-username/chatstash:latest}
 
-    container_name: ai-chats-prod
+    container_name: chatstash-prod
 
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.aichat.rule=Host(`${COOKIE_DOMAIN:?COOKIE_DOMAIN is required}`)"
-      - "traefik.http.routers.aichat.entrypoints=websecure"
-      - "traefik.http.routers.aichat.tls=true"
-      - "traefik.http.routers.aichat.tls.certresolver=letsencrypt"
-      - "traefik.http.services.aichat.loadbalancer.server.port=4173"
+      - "traefik.http.routers.chatstash.rule=Host(`${COOKIE_DOMAIN:?COOKIE_DOMAIN is required}`)"
+      - "traefik.http.routers.chatstash.entrypoints=websecure"
+      - "traefik.http.routers.chatstash.tls=true"
+      - "traefik.http.routers.chatstash.tls.certresolver=letsencrypt"
+      - "traefik.http.services.chatstash.loadbalancer.server.port=4173"
 
     environment:
       - NODE_ENV=production
@@ -95,7 +95,7 @@ services:
       - XENDIT_PLAN_CURRENCY=${XENDIT_PLAN_CURRENCY:-PHP}
 
     networks:
-      - ai-chats-prod-net
+      - chatstash-prod-net
       - proxy
 
     depends_on:
@@ -120,13 +120,13 @@ services:
         max-file: "3"
 
 volumes:
-  ai-chats-prod-pgdata:
-    name: ai-chats-prod-pgdata
-  ai-chats-prod-minio:
-    name: ai-chats-prod-minio
+  chatstash-prod-pgdata:
+    name: chatstash-prod-pgdata
+  chatstash-prod-minio:
+    name: chatstash-prod-minio
 
 networks:
-  ai-chats-prod-net:
-    name: ai-chats-prod-net
+  chatstash-prod-net:
+    name: chatstash-prod-net
   proxy:
     external: true

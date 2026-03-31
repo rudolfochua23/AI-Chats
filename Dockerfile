@@ -1,4 +1,4 @@
-# Multi-stage build for AI Chats App
+# Multi-stage build for ChatStash
 
 # Stage 1: Builder
 FROM node:18-alpine AS builder

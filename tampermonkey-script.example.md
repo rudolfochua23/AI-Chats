@@ -29,11 +29,11 @@
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   // CONFIG — Change this to your ChatStash URL
   //
-  // If you self-host: use your domain (e.g. "https://aichat.example.com")
+  // If you self-host: use your domain (e.g. "https://chatstash.example.com")
   // The API key is set via the "Set API Key" button in the panel
   // (get it from your dashboard → Settings → Tampermonkey API Key)
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  const API_URL = "https://your-domain.com";
+  const API_URL = "https://chatstash.yourdomain.com";
   const AUTOSAVE_MS = 1 * 60 * 1000;
   const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB per file
 

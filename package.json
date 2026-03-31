@@ -1,7 +1,7 @@
 {
-  "name": "ai-chats",
+  "name": "chatstash",
   "version": "1.0.0",
-  "description": "AI Chat Conversations Dashboard",
+  "description": "ChatStash — Stash your AI conversations",
   "scripts": {
     "start": "node server.js",
     "dev": "PORT=4173 node server.js",

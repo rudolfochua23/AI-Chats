@@ -1,8 +1,8 @@
-# Docker Setup Guide for AI Chats App
+# Docker Setup Guide for ChatStash App
 
 ## Overview
 
-This guide provides instructions for running the AI Chats application in Docker containers for both development and production environments.
+This guide provides instructions for running the ChatStash application in Docker containers for both development and production environments.
 
 ## Prerequisites
 
@@ -15,7 +15,7 @@ This guide provides instructions for running the AI Chats application in Docker 
 
 1. **Clone/Setup the project:**
    ```bash
-   cd /path/to/AI-Chats
+   cd /path/to/ChatStash
    ```
 
 2. **Create environment file (optional):**
@@ -142,7 +142,7 @@ NODE_ENV=development
 DEBUG=*
 
 # Application settings
-APP_NAME=AI Chats
+APP_NAME=ChatStash
 APP_VERSION=1.0.0
 ```
 
@@ -199,7 +199,7 @@ Use the dedicated compose file so every Komodo deployment starts the production 
 1. In Komodo, create a new Stack for this repository.
 2. Set Compose File to `docker-compose.komodo.yml`.
 3. Keep branch as `main` (or your chosen release branch).
-4. Set the production domain to `your-domain.com` in your reverse proxy / ingress route to this stack.
+4. Set the production domain to `chatstash.powerbyte.app` in your reverse proxy / ingress route to this stack.
 5. In Komodo stack environment variables, set:
    - `SESSION_SECRET` to a strong random value (required)
    - `PROD_PORT` if you need a custom external port (default is `3000`)
@@ -209,24 +209,24 @@ Result:
 - On each deployment trigger, Komodo builds `Dockerfile` using `target: production`.
 - Container runs with `NODE_ENV=production` automatically.
 - No development profile is used in Komodo deployments.
-- Session cookie security is enforced for `your-domain.com`.
+- Session cookie security is enforced for `chatstash.powerbyte.app`.
 
 ### Image Management
 
 ```bash
 # Build images manually
-docker build --target development -t ai-chats:dev .
-docker build --target production -t ai-chats:prod .
+docker build --target development -t chatstash:dev .
+docker build --target production -t chatstash:prod .
 
 # List images
-docker images | grep ai-chats
+docker images | grep chatstash
 
 # Remove image
-docker rmi ai-chats:dev
-docker rmi ai-chats:prod
+docker rmi chatstash:dev
+docker rmi chatstash:prod
 
 # View image details
-docker inspect ai-chats:prod
+docker inspect chatstash:prod
 ```
 
 ## Volumes and Data Persistence
@@ -323,7 +323,7 @@ Approximate image sizes:
 
 ## Networking
 
-Both configurations use a Docker network named `ai-chats-network`:
+Both configurations use a Docker network named `chatstash-network`:
 - Containers can communicate with each other using service names
 - Network is isolated by default
 - External access through exposed ports
@@ -337,9 +337,9 @@ For production deployment with multiple instances:
 docker-compose -f docker-compose.prod.yml up -d --scale app=3
 
 # With Kubernetes
-kubectl create deployment ai-chats --image=ai-chats:prod
-kubectl scale deployment ai-chats --replicas=3
-kubectl expose deployment ai-chats --port=3000 --type=LoadBalancer
+kubectl create deployment chatstash --image=chatstash:prod
+kubectl scale deployment chatstash --replicas=3
+kubectl expose deployment chatstash --port=3000 --type=LoadBalancer
 ```
 
 ## CI/CD Integration
@@ -348,12 +348,12 @@ kubectl expose deployment ai-chats --port=3000 --type=LoadBalancer
 
 ```bash
 # Build with tag
-docker build --target production -t your-registry/ai-chats:latest .
-docker build --target production -t your-registry/ai-chats:1.0.0 .
+docker build --target production -t your-registry/chatstash:latest .
+docker build --target production -t your-registry/chatstash:1.0.0 .
 
 # Push to registry
-docker push your-registry/ai-chats:latest
-docker push your-registry/ai-chats:1.0.0
+docker push your-registry/chatstash:latest
+docker push your-registry/chatstash:1.0.0
 ```
 
 ### Using in CI/CD pipelines
@@ -404,23 +404,23 @@ docker-compose logs --timestamps app
 
 ```bash
 # Real-time stats
-docker stats ai-chats-dev
+docker stats chatstash-dev
 
 # For production
-docker stats ai-chats-prod
+docker stats chatstash-prod
 ```
 
 ### Inspect container
 
 ```bash
 # Get container details
-docker inspect ai-chats-dev
+docker inspect chatstash-dev
 
 # Get container processes
-docker top ai-chats-dev
+docker top chatstash-dev
 
 # Get container logs
-docker logs ai-chats-dev
+docker logs chatstash-dev
 ```
 
 ## Additional Resources

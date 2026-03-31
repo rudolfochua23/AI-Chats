@@ -1,4 +1,4 @@
-# AI Chat Consolidator App
+# ChatStash
 
 This folder contains a simple web app that consolidates markdown conversation exports from both ChatGPT and Claude AI.
 
