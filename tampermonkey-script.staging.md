@@ -318,6 +318,9 @@
   // Claude uses virtualized rendering — messages are removed from DOM when scrolled past.
   // We must collect messages DURING scrolling, not after.
   async function extractClaude() {
+    // Bail early if no conversation messages are visible — prevents scrolling on project/dashboard pages
+    if (!document.querySelector('[data-testid="user-message"]')) return [];
+
     const scroller =
       document.querySelector('[class*="overflow-y-auto"]') ||
       document.querySelector("main") ||
