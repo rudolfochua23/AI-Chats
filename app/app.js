@@ -22,6 +22,7 @@ const state = {
   filesQuery: '',
   pendingEmail: null,
   pendingResetToken: null,
+  userRole: null,
   _loadRequestId: 0,
   searchResults: {
     matches: [],
@@ -98,8 +99,11 @@ const els = {
   mainLayout: document.querySelector('.layout'),
   // Settings
   settingsBtn: document.querySelector('#settingsBtn'),
+  adminBtn: document.querySelector('#adminBtn'),
+  supportBtn: document.querySelector('#supportBtn'),
   logoutBtn: document.querySelector('#logoutBtn'),
   settingsOverlay: document.querySelector('#settingsOverlay'),
+  supportOverlay: document.querySelector('#supportOverlay'),
   apiKeyDisplay: document.querySelector('#apiKeyDisplay'),
   copyApiKeyBtn: document.querySelector('#copyApiKeyBtn'),
   regenApiKeyBtn: document.querySelector('#regenApiKeyBtn'),
@@ -188,6 +192,7 @@ async function bootstrap() {
     return;
   }
 
+  state.userRole = session.role || 'user';
   await unlockAndInitApp();
 
   // Handle return from Xendit payment
@@ -753,6 +758,120 @@ function bindAuthEvents() {
     }
   });
 
+  // ── Admin Panel ────────────────────────────────────────────────────────
+  els.adminBtn.addEventListener('click', () => {
+    if (typeof window.openAdminPanel === 'function') window.openAdminPanel();
+  });
+
+  // ── Support Tickets ──────────────────────────────────────────────────
+  els.supportBtn.addEventListener('click', () => {
+    els.supportOverlay.hidden = false;
+    loadSupportTickets();
+  });
+
+  // Close support overlay
+  els.supportOverlay.querySelector('[data-close-overlay]').addEventListener('click', () => {
+    els.supportOverlay.hidden = true;
+  });
+  els.supportOverlay.addEventListener('click', (e) => {
+    if (e.target === els.supportOverlay) els.supportOverlay.hidden = true;
+  });
+
+  // New ticket form
+  const supportNewTicket = document.getElementById('supportNewTicket');
+  const supportTicketList = document.getElementById('supportTicketList');
+  const supportTicketView = document.getElementById('supportTicketView');
+
+  document.getElementById('newTicketBtn').addEventListener('click', () => {
+    supportTicketList.hidden = true;
+    supportNewTicket.hidden = false;
+    supportTicketView.hidden = true;
+    document.getElementById('newTicketForm').reset();
+    document.getElementById('ticketFileNames').textContent = '';
+    setAuthStatus(document.getElementById('ticketSubmitStatus'), '', '');
+  });
+
+  document.getElementById('ticketCancelBtn').addEventListener('click', () => {
+    supportNewTicket.hidden = true;
+    supportTicketList.hidden = false;
+  });
+
+  let ticketPendingFiles = [];
+  document.getElementById('ticketFiles').addEventListener('change', (e) => {
+    ticketPendingFiles = Array.from(e.target.files).slice(0, 5);
+    document.getElementById('ticketFileNames').textContent = ticketPendingFiles.map(f => f.name).join(', ');
+  });
+
+  document.getElementById('newTicketForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const subject = document.getElementById('ticketSubject').value.trim();
+    const description = document.getElementById('ticketDescription').value.trim();
+    const priority = document.getElementById('ticketPriority').value;
+    const submitBtn = document.getElementById('ticketSubmitBtn');
+    const statusEl = document.getElementById('ticketSubmitStatus');
+
+    submitBtn.disabled = true;
+    setAuthStatus(statusEl, 'Submitting...', '');
+
+    try {
+      const attachments = [];
+      for (const file of ticketPendingFiles) {
+        const data = await fileToBase64(file);
+        attachments.push({ fileName: file.name, mimeType: file.type, data });
+      }
+      await apiPost('/api/tickets', { subject, description, priority, attachments });
+      ticketPendingFiles = [];
+      supportNewTicket.hidden = true;
+      supportTicketList.hidden = false;
+      loadSupportTickets();
+    } catch (err) {
+      setAuthStatus(statusEl, 'Failed to submit ticket.', 'error');
+    } finally {
+      submitBtn.disabled = false;
+    }
+  });
+
+  // Ticket view back button
+  document.getElementById('ticketBackBtn').addEventListener('click', () => {
+    supportTicketView.hidden = true;
+    supportTicketList.hidden = false;
+  });
+
+  // Ticket reply files
+  let ticketReplyPendingFiles = [];
+  document.getElementById('ticketReplyFiles').addEventListener('change', (e) => {
+    ticketReplyPendingFiles = Array.from(e.target.files).slice(0, 5);
+    document.getElementById('ticketReplyFileNames').textContent = ticketReplyPendingFiles.map(f => f.name).join(', ');
+  });
+
+  document.getElementById('ticketReplySendBtn').addEventListener('click', async () => {
+    const message = document.getElementById('ticketReplyText').value.trim();
+    if (!message) return;
+    const btn = document.getElementById('ticketReplySendBtn');
+    const statusEl = document.getElementById('ticketReplyStatus');
+    btn.disabled = true;
+    setAuthStatus(statusEl, 'Sending...', '');
+
+    try {
+      const ticketId = supportTicketView.dataset.ticketId;
+      const attachments = [];
+      for (const file of ticketReplyPendingFiles) {
+        const data = await fileToBase64(file);
+        attachments.push({ fileName: file.name, mimeType: file.type, data });
+      }
+      await apiPost(`/api/tickets/${ticketId}/messages`, { message, attachments });
+      ticketReplyPendingFiles = [];
+      document.getElementById('ticketReplyText').value = '';
+      document.getElementById('ticketReplyFileNames').textContent = '';
+      setAuthStatus(statusEl, '', '');
+      loadSupportTicketDetail(ticketId);
+    } catch (err) {
+      setAuthStatus(statusEl, 'Failed to send reply.', 'error');
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
   els.logoutBtn.addEventListener('click', () => {
     void logout();
   });
@@ -795,14 +914,140 @@ async function logout() {
   }
 }
 
+// ─── Support Ticket Functions ─────────────────────────────────────────────
+
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result.split(',')[1]);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+async function loadSupportTickets() {
+  const ul = document.getElementById('supportTickets');
+  ul.innerHTML = '<li style="color:var(--muted);padding:1rem;text-align:center;">Loading...</li>';
+
+  try {
+    const resp = await authFetch('/api/tickets', { method: 'GET' });
+    if (!resp || !resp.ok) { ul.innerHTML = '<li style="color:var(--muted);padding:1rem;text-align:center;">Failed to load tickets</li>'; return; }
+    const data = await resp.json();
+    const tickets = data.tickets || [];
+
+    if (tickets.length === 0) {
+      ul.innerHTML = '<li style="color:var(--muted);padding:1rem;text-align:center;">No tickets yet. Create one if you need help.</li>';
+      return;
+    }
+
+    ul.innerHTML = tickets.map(t => `
+      <li class="support-ticket-item" data-ticket-id="${t.id}">
+        <div class="support-ticket-subject">${escHtml(t.subject)}</div>
+        <div class="support-ticket-meta">
+          <span class="admin-badge ${t.status}">${t.status}</span>
+          <span class="admin-badge ${t.priority}">${t.priority}</span>
+          <span style="color:var(--muted);font-size:0.72rem;">${t.message_count} messages</span>
+          <span style="color:var(--muted);font-size:0.72rem;">${new Date(t.created_at).toLocaleDateString()}</span>
+        </div>
+      </li>
+    `).join('');
+
+    ul.querySelectorAll('[data-ticket-id]').forEach(li => {
+      li.addEventListener('click', () => {
+        document.getElementById('supportTicketList').hidden = true;
+        document.getElementById('supportNewTicket').hidden = true;
+        const view = document.getElementById('supportTicketView');
+        view.hidden = false;
+        view.dataset.ticketId = li.dataset.ticketId;
+        loadSupportTicketDetail(li.dataset.ticketId);
+      });
+    });
+  } catch {
+    ul.innerHTML = '<li style="color:var(--muted);padding:1rem;text-align:center;">Failed to load tickets</li>';
+  }
+}
+
+async function loadSupportTicketDetail(ticketId) {
+  const detail = document.getElementById('supportTicketDetail');
+  detail.innerHTML = '<p style="color:var(--muted);text-align:center;">Loading...</p>';
+
+  try {
+    const resp = await authFetch(`/api/tickets/${encodeURIComponent(ticketId)}`, { method: 'GET' });
+    if (!resp || !resp.ok) { detail.innerHTML = '<p style="color:var(--muted);">Failed to load ticket</p>'; return; }
+    const data = await resp.json();
+    const t = data.ticket;
+    const msgs = data.messages || [];
+    const atts = data.attachments || [];
+
+    const attsByMsg = {};
+    atts.forEach(a => {
+      const key = a.ticket_message_id || '__initial';
+      if (!attsByMsg[key]) attsByMsg[key] = [];
+      attsByMsg[key].push(a);
+    });
+
+    let html = `
+      <div style="margin-bottom:1rem;">
+        <h3 style="margin:0 0 0.3rem;font-size:1rem;">${escHtml(t.subject)}</h3>
+        <span class="admin-badge ${t.status}">${t.status}</span>
+        <span class="admin-badge ${t.priority}">${t.priority}</span>
+        <p style="color:var(--muted);font-size:0.78rem;margin:0.3rem 0 0;">${new Date(t.created_at).toLocaleString()}</p>
+        <p style="margin:0.5rem 0;white-space:pre-wrap;">${escHtml(t.description)}</p>
+        ${renderSupportAttachments(attsByMsg['__initial'] || [])}
+      </div>
+    `;
+
+    msgs.forEach(m => {
+      html += `
+        <div style="padding:0.6rem 0.8rem;margin-bottom:0.4rem;border-radius:8px;background:${m.is_admin ? 'rgba(167,139,250,0.08)' : 'var(--panel)'};border:1px solid rgba(167,139,250,${m.is_admin ? '0.15' : '0.08'});">
+          <div style="font-size:0.72rem;color:var(--muted);margin-bottom:0.3rem;">
+            <strong style="color:var(--text);font-size:0.78rem;">${escHtml(m.username)}</strong>
+            ${m.is_admin ? '<span class="admin-badge admin" style="margin-left:0.3rem;">Admin</span>' : ''}
+            <span style="margin-left:0.5rem;">${new Date(m.created_at).toLocaleString()}</span>
+          </div>
+          <div style="white-space:pre-wrap;word-break:break-word;">${escHtml(m.message)}</div>
+          ${renderSupportAttachments(attsByMsg[m.id] || [])}
+        </div>
+      `;
+    });
+
+    detail.innerHTML = html;
+  } catch {
+    detail.innerHTML = '<p style="color:var(--muted);">Failed to load ticket</p>';
+  }
+}
+
+function renderSupportAttachments(atts) {
+  if (!atts || atts.length === 0) return '';
+  return '<div style="display:flex;flex-wrap:wrap;gap:0.4rem;margin-top:0.4rem;">' +
+    atts.map(a => {
+      const isImage = a.file_type && a.file_type.startsWith('image/');
+      if (isImage) {
+        return `<img src="/api/ticket-files/${a.id}" alt="${escHtml(a.file_name)}" style="max-width:200px;max-height:150px;border-radius:6px;cursor:pointer;border:1px solid rgba(167,139,250,0.15);" onclick="window.open('/api/ticket-files/${a.id}','_blank')" />`;
+      }
+      return `<a href="/api/ticket-files/${a.id}" target="_blank" style="color:var(--accent);font-size:0.78rem;">${escHtml(a.file_name)}</a>`;
+    }).join('') + '</div>';
+}
+
+function escHtml(s) {
+  if (!s) return '';
+  const div = document.createElement('div');
+  div.textContent = s;
+  return div.innerHTML;
+}
+
 function lockApp() {
   document.body.classList.add('auth-locked');
   els.settingsOverlay.hidden = true;
+  els.supportOverlay.hidden = true;
   els.settingsBtn.hidden = true;
+  els.supportBtn.hidden = true;
+  els.adminBtn.hidden = true;
   els.logoutBtn.hidden = true;
   els.headerSignInBtn.hidden = false;
   els.landingPage.hidden = false;
   els.mainLayout.hidden = true;
+  state.userRole = null;
 
   const params = new URLSearchParams(window.location.search);
   const resetToken = params.get('reset');
@@ -821,10 +1066,25 @@ function unlockApp() {
   document.body.classList.remove('auth-locked');
   hideAllAuthOverlays();
   els.settingsBtn.hidden = false;
+  els.supportBtn.hidden = false;
   els.logoutBtn.hidden = false;
   els.headerSignInBtn.hidden = true;
   els.landingPage.hidden = true;
   els.mainLayout.hidden = false;
+
+  // Show admin button only for admins, and load admin assets dynamically
+  const isAdmin = state.userRole === 'admin';
+  els.adminBtn.hidden = !isAdmin;
+  if (isAdmin && !document.getElementById('adminCssLink')) {
+    const link = document.createElement('link');
+    link.id = 'adminCssLink';
+    link.rel = 'stylesheet';
+    link.href = './admin.css';
+    document.head.appendChild(link);
+    const script = document.createElement('script');
+    script.src = './admin.js';
+    document.body.appendChild(script);
+  }
 
   const params = new URLSearchParams(window.location.search);
   if (params.has('reset')) {

@@ -1095,3 +1095,68 @@ select:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: -2px;
 }
+
+/* ─── Support Tickets ──────────────────────────────────────────────────── */
+
+.support-toolbar {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.support-tickets-ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.support-ticket-item {
+  padding: 0.7rem 0.8rem;
+  border: 1px solid rgba(167, 139, 250, 0.1);
+  border-radius: 8px;
+  margin-bottom: 0.4rem;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.support-ticket-item:hover {
+  background: rgba(167, 139, 250, 0.06);
+}
+
+.support-ticket-subject {
+  font-weight: 600;
+  font-size: 0.88rem;
+  color: var(--text);
+  margin-bottom: 0.3rem;
+}
+
+.support-ticket-meta {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.support-file-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0.5rem 0;
+}
+
+.support-reply-section textarea {
+  background: var(--panel);
+  border: 1px solid rgba(167, 139, 250, 0.2);
+  color: var(--text);
+  padding: 0.5rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-family: inherit;
+}
+
+.support-reply-section textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+}

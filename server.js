@@ -7,6 +7,8 @@ const crypto = require('node:crypto');
 const db = require('./db');
 const storage = require('./storage');
 const xendit = require('./xendit');
+const adminDb = require('./admin-db');
+const adminRouter = require('./admin-routes');
 
 let nodemailer;
 try { nodemailer = require('nodemailer'); } catch { nodemailer = null; }
@@ -115,12 +117,29 @@ app.post('/api/webhook/xendit', express.json({ limit: '1mb' }), async (req, res)
         expiresAt: nextMonth.toISOString(),
         storageTier: tier,
       });
+      const eventType = event === 'recurring.plan.activated' ? 'activated' : 'payment_succeeded';
+      await adminDb.logSubscriptionEvent(user.id, {
+        eventType, storageTier: tier,
+        amountCents: db.priceForTier(tier),
+        currency: xendit.PLAN_CURRENCY,
+        metadata: { planId: planId, xenditEvent: event },
+      }).catch(e => console.error('Event log error:', e.message));
       console.log(`Webhook: upgraded user ${user.email} to premium (tier ${tier}, ${tier * 5} GB)`);
     } else if (event === 'recurring.plan.inactivated') {
       await db.updateSubscription(user.id, { status: 'cancelled' });
+      await adminDb.logSubscriptionEvent(user.id, {
+        eventType: 'cancelled',
+        storageTier: user.storage_tier,
+        metadata: { planId: planId, xenditEvent: event },
+      }).catch(e => console.error('Event log error:', e.message));
       console.log(`Webhook: cancelled subscription for ${user.email}`);
     } else if (event === 'recurring.cycle.failed') {
       await db.updateSubscription(user.id, { status: 'past_due' });
+      await adminDb.logSubscriptionEvent(user.id, {
+        eventType: 'payment_failed',
+        storageTier: user.storage_tier,
+        metadata: { planId: planId, xenditEvent: event },
+      }).catch(e => console.error('Event log error:', e.message));
       console.log(`Webhook: payment failed for ${user.email}`);
     }
 
@@ -280,6 +299,7 @@ app.get('/api/auth/session', (req, res) => {
     authenticated: Boolean(req.session?.user),
     email: req.session?.user?.email || null,
     username: req.session?.user?.username || null,
+    role: req.session?.user?.role || null,
   });
 });
 
@@ -310,7 +330,7 @@ app.post('/api/auth/login', async (req, res) => {
 
     await clearAttempts(ip);
     // Regenerate session to prevent session fixation attacks
-    const userData = { userId: user.id, email: user.email, username: user.username, tier: user.tier };
+    const userData = { userId: user.id, email: user.email, username: user.username, tier: user.tier, role: user.role };
     await new Promise((resolve, reject) => {
       req.session.regenerate((err) => {
         if (err) { reject(err); return; }
@@ -401,7 +421,7 @@ app.post('/api/auth/verify-email', async (req, res) => {
     });
     await db.deletePendingVerification(emailNorm);
 
-    req.session.user = { userId: newUser.id, email: newUser.email, username: newUser.username, tier: newUser.tier || 'free' };
+    req.session.user = { userId: newUser.id, email: newUser.email, username: newUser.username, tier: newUser.tier || 'free', role: newUser.role || 'user' };
     res.json({ ok: true, email: newUser.email, username: newUser.username });
   } catch (e) {
     console.error('Verify-email error:', e.message);
@@ -555,6 +575,12 @@ app.post('/api/subscription/create', requireAuth, async (req, res) => {
       xenditPlanId: plan.id,
       status: 'pending',
     });
+    await adminDb.logSubscriptionEvent(user.id, {
+      eventType: 'created', storageTier: initialTier,
+      amountCents: db.priceForTier(initialTier),
+      currency: xendit.PLAN_CURRENCY,
+      metadata: { planId: plan.id },
+    }).catch(e => console.error('Event log error:', e.message));
 
     const payUrl = plan.actions?.find(a => a.action === 'AUTH')?.url
       || plan.actions?.find(a => a.url_type === 'WEB')?.url
@@ -605,6 +631,10 @@ app.post('/api/subscription/cancel', requireAuth, async (req, res) => {
 
     await xendit.deactivatePlan(user.xendit_plan_id);
     await db.updateSubscription(user.id, { status: 'cancelled' });
+    await adminDb.logSubscriptionEvent(user.id, {
+      eventType: 'cancelled', storageTier: user.storage_tier,
+      metadata: { planId: user.xendit_plan_id },
+    }).catch(e => console.error('Event log error:', e.message));
 
     res.json({ ok: true, expiresAt: user.subscription_expires_at });
   } catch (e) {
@@ -649,6 +679,12 @@ app.post('/api/subscription/upgrade-storage', requireAuth, async (req, res) => {
 
     // Immediately increase the user's storage limit
     await db.updateSubscription(user.id, { storageTier: newTier });
+    await adminDb.logSubscriptionEvent(user.id, {
+      eventType: 'upgraded', storageTier: newTier,
+      amountCents: newAmount,
+      currency: xendit.PLAN_CURRENCY,
+      metadata: { planId: user.xendit_plan_id, previousTier: currentTier },
+    }).catch(e => console.error('Event log error:', e.message));
 
     res.json({
       ok: true,
@@ -874,6 +910,148 @@ app.get('/api/search', requireAuth, async (req, res) => {
   }
 });
 
+// ─── Admin Routes ──────────────────────────────────────────────────────────
+
+app.use('/api/admin', adminRouter);
+
+// ─── User Ticket Routes ───────────────────────────────────────────────────
+
+app.post('/api/tickets', requireAuth, async (req, res) => {
+  const { subject, description, priority, attachments: atts } = req.body || {};
+  if (!subject || typeof subject !== 'string' || !description || typeof description !== 'string') {
+    return res.status(400).json({ ok: false, error: 'Subject and description are required.' });
+  }
+  if (subject.length > 200) return res.status(400).json({ ok: false, error: 'Subject must be under 200 characters.' });
+  if (description.length > 5000) return res.status(400).json({ ok: false, error: 'Description must be under 5000 characters.' });
+
+  try {
+    const ticket = await adminDb.createTicket(req.session.user.userId, {
+      subject: subject.trim(),
+      description: description.trim(),
+      priority: ['low', 'medium', 'high', 'critical'].includes(priority) ? priority : 'medium',
+    });
+
+    // Process screenshot attachments (base64)
+    if (Array.isArray(atts)) {
+      for (const att of atts.slice(0, 5)) {
+        if (!att.fileName || !att.data) continue;
+        const safeName = path.basename(att.fileName).slice(0, 255) || 'screenshot.png';
+        const buffer = Buffer.from(att.data, 'base64');
+        if (buffer.length > 10 * 1024 * 1024) continue; // 10MB max
+
+        const storagePath = storage.buildTicketStoragePath(ticket.id, safeName);
+        await storage.uploadTicketFile({ storagePath, buffer, mimeType: att.mimeType || 'image/png', fileName: safeName });
+        await adminDb.createTicketAttachment({
+          ticketId: ticket.id, ticketMessageId: null, userId: req.session.user.userId,
+          fileName: safeName, fileType: att.mimeType || 'image/png', fileSize: buffer.length, storagePath,
+        });
+      }
+    }
+
+    res.json({ ok: true, ticket });
+  } catch (e) {
+    console.error('Create ticket error:', e.message);
+    res.status(500).json({ ok: false, error: 'Failed to create ticket.' });
+  }
+});
+
+app.get('/api/tickets', requireAuth, async (req, res) => {
+  try {
+    const tickets = await adminDb.listUserTickets(req.session.user.userId, {
+      limit: Math.min(Number(req.query.limit) || 20, 100),
+      offset: Number(req.query.offset) || 0,
+    });
+    res.json({ ok: true, tickets });
+  } catch (e) {
+    console.error('List tickets error:', e.message);
+    res.status(500).json({ ok: false, error: 'Failed to list tickets.' });
+  }
+});
+
+app.get('/api/tickets/:id', requireAuth, async (req, res) => {
+  try {
+    const ticket = await adminDb.getTicket(req.params.id);
+    if (!ticket || ticket.user_id !== req.session.user.userId) {
+      return res.status(404).json({ ok: false, error: 'Ticket not found.' });
+    }
+    const messages = await adminDb.getTicketMessages(req.params.id);
+    const attachments = await adminDb.getTicketAttachments(req.params.id);
+    res.json({ ok: true, ticket, messages, attachments });
+  } catch (e) {
+    console.error('Get ticket error:', e.message);
+    res.status(500).json({ ok: false, error: 'Failed to get ticket.' });
+  }
+});
+
+app.post('/api/tickets/:id/messages', requireAuth, async (req, res) => {
+  const { message, attachments: atts } = req.body || {};
+  if (!message || typeof message !== 'string') {
+    return res.status(400).json({ ok: false, error: 'Message is required.' });
+  }
+  if (message.length > 5000) return res.status(400).json({ ok: false, error: 'Message must be under 5000 characters.' });
+
+  try {
+    const ticket = await adminDb.getTicket(req.params.id);
+    if (!ticket || ticket.user_id !== req.session.user.userId) {
+      return res.status(404).json({ ok: false, error: 'Ticket not found.' });
+    }
+    if (ticket.status === 'closed') {
+      return res.status(400).json({ ok: false, error: 'Cannot reply to a closed ticket.' });
+    }
+
+    const ticketMsg = await adminDb.addTicketMessage(req.params.id, req.session.user.userId, {
+      message, isAdmin: false,
+    });
+
+    const savedAttachments = [];
+    if (Array.isArray(atts)) {
+      for (const att of atts.slice(0, 5)) {
+        if (!att.fileName || !att.data) continue;
+        const safeName = path.basename(att.fileName).slice(0, 255) || 'screenshot.png';
+        const buffer = Buffer.from(att.data, 'base64');
+        if (buffer.length > 10 * 1024 * 1024) continue;
+
+        const storagePath = storage.buildTicketStoragePath(req.params.id, safeName);
+        await storage.uploadTicketFile({ storagePath, buffer, mimeType: att.mimeType || 'image/png', fileName: safeName });
+        const attachment = await adminDb.createTicketAttachment({
+          ticketId: req.params.id, ticketMessageId: ticketMsg.id, userId: req.session.user.userId,
+          fileName: safeName, fileType: att.mimeType || 'image/png', fileSize: buffer.length, storagePath,
+        });
+        savedAttachments.push(attachment);
+      }
+    }
+
+    res.json({ ok: true, message: ticketMsg, attachments: savedAttachments });
+  } catch (e) {
+    console.error('Ticket reply error:', e.message);
+    res.status(500).json({ ok: false, error: 'Failed to reply to ticket.' });
+  }
+});
+
+// Serve ticket attachments (user can only see their own tickets' files)
+app.get('/api/ticket-files/:attachmentId', requireAuth, async (req, res) => {
+  try {
+    const attachment = await adminDb.getTicketAttachment(req.params.attachmentId);
+    if (!attachment) return res.status(404).json({ ok: false, error: 'File not found.' });
+
+    // Verify user owns the ticket
+    const ticket = await adminDb.getTicket(attachment.ticket_id);
+    if (!ticket || (ticket.user_id !== req.session.user.userId && req.session.user.role !== 'admin')) {
+      return res.status(403).json({ ok: false, error: 'Access denied.' });
+    }
+
+    const file = await storage.getFile(attachment.storage_path);
+    res.set('Content-Type', file.contentType || 'application/octet-stream');
+    const safeName = attachment.file_name.replace(/["\\\r\n]/g, '_');
+    res.set('Content-Disposition', `inline; filename="${safeName}"`);
+    if (file.contentLength) res.set('Content-Length', String(file.contentLength));
+    file.stream.pipe(res);
+  } catch (e) {
+    console.error('Ticket file serve error:', e.message);
+    res.status(500).json({ ok: false, error: 'Failed to serve file.' });
+  }
+});
+
 // ─── Error handler ────────────────────────────────────────────────────────
 
 // eslint-disable-next-line no-unused-vars
@@ -890,6 +1068,7 @@ app.get('*', (_req, res) => res.sendFile(path.join(__dirname, 'app', 'index.html
 // ─── Start ────────────────────────────────────────────────────────────────────
 
 db.migrate()
+  .then(() => adminDb.migrateAdmin())
   .then(() => seedAdmin())
   .then(() => {
     app.listen(PORT, () => console.log(`ChatPile App server running on port ${PORT}`));

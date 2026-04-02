@@ -14,6 +14,8 @@
       <p>Browse, search, and manage all your AI conversations in one place.</p>
       <div class="header-actions">
         <button id="headerSignInBtn" class="logout-btn">Sign In</button>
+        <button id="supportBtn" class="logout-btn" hidden>Support</button>
+        <button id="adminBtn" class="logout-btn" hidden>Admin</button>
         <button id="settingsBtn" class="logout-btn" hidden>Settings</button>
         <button id="logoutBtn" class="logout-btn" hidden>Logout</button>
       </div>
@@ -157,6 +159,65 @@
 
         <div class="settings-actions" style="margin-top:0.5rem;">
           <button id="closeSettingsBtn" type="button" class="secondary-btn" style="width:100%;">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="supportOverlay" class="auth-overlay" role="dialog" aria-modal="true" aria-labelledby="supportTitle" hidden>
+      <div class="auth-card" style="max-width:560px;">
+        <button type="button" class="auth-close-btn" data-close-overlay aria-label="Close">&times;</button>
+        <h2 id="supportTitle">Support</h2>
+
+        <div id="supportTicketList" class="support-ticket-list">
+          <div class="support-toolbar">
+            <button id="newTicketBtn" class="hero-btn primary" style="font-size:0.82rem;padding:0.45rem 1rem;">New Ticket</button>
+          </div>
+          <ul id="supportTickets" class="support-tickets-ul"></ul>
+        </div>
+
+        <div id="supportNewTicket" hidden>
+          <form id="newTicketForm" autocomplete="off">
+            <label for="ticketSubject">Subject</label>
+            <input id="ticketSubject" name="subject" type="text" required maxlength="200" placeholder="Brief summary of your issue" />
+            <label for="ticketPriority">Priority</label>
+            <select id="ticketPriority" name="priority">
+              <option value="low">Low</option>
+              <option value="medium" selected>Medium</option>
+              <option value="high">High</option>
+              <option value="critical">Critical</option>
+            </select>
+            <label for="ticketDescription">Description</label>
+            <textarea id="ticketDescription" name="description" required maxlength="5000" rows="5" placeholder="Describe the issue in detail..." style="resize:vertical;"></textarea>
+            <div class="support-file-row">
+              <label class="export-btn" style="cursor:pointer;font-size:0.78rem;">
+                Attach Screenshots
+                <input type="file" id="ticketFiles" accept="image/*" multiple hidden />
+              </label>
+              <span id="ticketFileNames" class="auth-hint" style="margin:0;font-size:0.75rem;"></span>
+            </div>
+            <div class="settings-actions" style="gap:0.5rem;">
+              <button type="submit" id="ticketSubmitBtn">Submit Ticket</button>
+              <button type="button" id="ticketCancelBtn" class="secondary-btn">Cancel</button>
+            </div>
+            <p id="ticketSubmitStatus" class="auth-status" aria-live="polite"></p>
+          </form>
+        </div>
+
+        <div id="supportTicketView" hidden>
+          <button id="ticketBackBtn" type="button" class="export-btn" style="margin-bottom:0.75rem;font-size:0.78rem;">Back to Tickets</button>
+          <div id="supportTicketDetail"></div>
+          <div class="support-reply-section" style="margin-top:1rem;">
+            <textarea id="ticketReplyText" placeholder="Type your reply..." rows="3" style="width:100%;resize:vertical;"></textarea>
+            <div class="support-file-row" style="margin-top:0.3rem;">
+              <label class="export-btn" style="cursor:pointer;font-size:0.78rem;">
+                Attach Screenshot
+                <input type="file" id="ticketReplyFiles" accept="image/*" multiple hidden />
+              </label>
+              <span id="ticketReplyFileNames" class="auth-hint" style="margin:0;font-size:0.75rem;"></span>
+            </div>
+            <button id="ticketReplySendBtn" class="hero-btn primary" style="font-size:0.82rem;padding:0.45rem 1rem;margin-top:0.5rem;">Send Reply</button>
+            <p id="ticketReplyStatus" class="auth-status" aria-live="polite"></p>
+          </div>
         </div>
       </div>
     </div>

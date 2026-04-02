@@ -122,6 +122,45 @@ async function deleteConversationFiles(userId, conversationId) {
   return totalDeleted;
 }
 
+// ─── Ticket file storage ────────────────────────────────────────────────────
+
+function buildTicketStoragePath(ticketId, fileName) {
+  const id = crypto.randomUUID();
+  const ext = getExtension(fileName);
+  return `tickets/${ticketId}/${id}${ext}`;
+}
+
+async function uploadTicketFile({ storagePath, buffer, mimeType, fileName }) {
+  await s3.send(new PutObjectCommand({
+    Bucket: BUCKET,
+    Key: storagePath,
+    Body: buffer,
+    ContentType: mimeType,
+    Metadata: { 'original-name': fileName },
+  }));
+  return { storagePath, fileSize: buffer.length };
+}
+
+async function deleteTicketFiles(ticketId) {
+  const prefix = `tickets/${ticketId}/`;
+  let continuationToken;
+  let totalDeleted = 0;
+
+  do {
+    const list = await s3.send(new ListObjectsV2Command({
+      Bucket: BUCKET, Prefix: prefix, ContinuationToken: continuationToken,
+    }));
+    const objects = (list.Contents || []).map((obj) => ({ Key: obj.Key }));
+    if (objects.length > 0) {
+      await s3.send(new DeleteObjectsCommand({ Bucket: BUCKET, Delete: { Objects: objects } }));
+      totalDeleted += objects.length;
+    }
+    continuationToken = list.IsTruncated ? list.NextContinuationToken : undefined;
+  } while (continuationToken);
+
+  return totalDeleted;
+}
+
 module.exports = {
   categorizeFile,
   isFreeAllowed,
@@ -129,4 +168,7 @@ module.exports = {
   getFile,
   deleteFile,
   deleteConversationFiles,
+  buildTicketStoragePath,
+  uploadTicketFile,
+  deleteTicketFiles,
 };
