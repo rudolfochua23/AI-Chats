@@ -350,6 +350,39 @@ async function adminRevokePremium(userId) {
   return rows[0] || null;
 }
 
+async function deduplicateAttachments(userId, conversationId) {
+  // Find duplicates: same conversation, user, file_size, file_name — keep only the first
+  const { rows: dupes } = await pool.query(`
+    DELETE FROM attachments
+    WHERE id IN (
+      SELECT id FROM (
+        SELECT id, ROW_NUMBER() OVER (
+          PARTITION BY conversation_id, user_id, message_index, file_size
+          ORDER BY created_at ASC
+        ) AS rn
+        FROM attachments
+        WHERE ($1::uuid IS NULL OR user_id = $1)
+          AND ($2::text IS NULL OR conversation_id = $2)
+      ) ranked
+      WHERE rn > 1
+    )
+    RETURNING id, file_size, storage_path
+  `, [userId || null, conversationId || null]);
+
+  // Recalculate storage used for affected users
+  if (dupes.length > 0) {
+    const totalFreed = dupes.reduce((sum, d) => sum + Number(d.file_size), 0);
+    if (userId) {
+      await pool.query(
+        'UPDATE users SET storage_used_bytes = GREATEST(0, storage_used_bytes - $1) WHERE id = $2',
+        [totalFreed, userId]
+      );
+    }
+  }
+
+  return { removed: dupes.length, paths: dupes.map(d => d.storage_path) };
+}
+
 // ─── Revenue Reports ───────────────────────────────────────────────────────────
 
 async function getRevenueReport({ period = 'daily', startDate, endDate } = {}) {
@@ -636,6 +669,7 @@ module.exports = {
   adminUpdateUser,
   adminGrantPremium,
   adminRevokePremium,
+  deduplicateAttachments,
   getRevenueReport,
   getUserAnalytics,
   getPlatformAnalytics,

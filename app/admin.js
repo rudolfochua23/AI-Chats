@@ -910,7 +910,33 @@
             </tbody>
           </table>
         </div>
+
+        <h3 style="color:var(--text);font-size:0.9rem;margin:1.5rem 0 0.75rem;">Maintenance</h3>
+        <div style="display:flex;gap:0.5rem;align-items:center;">
+          <button class="admin-btn" id="adminDedupeBtn">Deduplicate Files</button>
+          <span id="adminDedupeStatus" style="font-size:0.78rem;color:var(--muted);"></span>
+        </div>
+        <p style="font-size:0.72rem;color:var(--muted);margin-top:0.3rem;">Removes duplicate attachments (same conversation, message, and file size). Cleans up S3 storage.</p>
       `;
+
+      section.querySelector('#adminDedupeBtn').addEventListener('click', async () => {
+        const btn = section.querySelector('#adminDedupeBtn');
+        const status = section.querySelector('#adminDedupeStatus');
+        if (!confirm('Deduplicate all file attachments across all users? This removes duplicate files from S3.')) return;
+        btn.disabled = true;
+        status.textContent = 'Running...';
+        try {
+          const result = await adminPost('/api/admin/deduplicate-attachments', {});
+          status.textContent = result.removed > 0
+            ? `Done — removed ${result.removed} duplicate(s).`
+            : 'No duplicates found.';
+          loadSystem(); // refresh stats
+        } catch (err) {
+          status.textContent = 'Failed: ' + err.message;
+        } finally {
+          btn.disabled = false;
+        }
+      });
     } catch (e) {
       section.innerHTML = `<p class="admin-empty">Failed to load system data: ${escHtml(e.message)}</p>`;
     }

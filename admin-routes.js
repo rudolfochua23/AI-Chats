@@ -116,6 +116,21 @@ router.post('/users/:id/revoke-premium', async (req, res) => {
   }
 });
 
+router.post('/deduplicate-attachments', async (req, res) => {
+  try {
+    const { userId, conversationId } = req.body || {};
+    const result = await adminDb.deduplicateAttachments(userId || null, conversationId || null);
+    // Delete orphaned S3 files
+    for (const path of result.paths) {
+      try { await storage.deleteFile(path); } catch { /* already gone */ }
+    }
+    res.json({ ok: true, removed: result.removed });
+  } catch (e) {
+    console.error('Deduplicate error:', e.message);
+    res.status(500).json({ ok: false, error: 'Failed to deduplicate.' });
+  }
+});
+
 // ─── Tickets (Admin View) ───────────────────────────────────────────────────────
 
 router.get('/tickets', async (req, res) => {
